@@ -25,7 +25,7 @@ const submitUpdate = async (req, res) => {
     const team = await Team.findById(teamId);
     if (!team) return res.status(404).json({ success: false, message: 'Team not found' });
 
-    const isMember = team.members.some((m) => m.user.toString() === req.user.id);
+    const isMember = team.members.some((m) => m.user.toString() === req.user.id.toString());
     if (!isMember) {
       return res.status(403).json({ success: false, message: 'You are not a member of this team' });
     }
@@ -79,7 +79,7 @@ const editUpdate = async (req, res) => {
     const update = await WeeklyUpdate.findById(req.params.id);
     if (!update) return res.status(404).json({ success: false, message: 'Update not found' });
 
-    if (update.student.toString() !== req.user.id) {
+    if (update.student.toString() !== req.user.id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized to edit this update' });
     }
 

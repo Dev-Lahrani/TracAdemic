@@ -88,7 +88,7 @@ const getProject = async (req, res) => {
     }
 
     // Check authorization
-    if (req.user.role === 'professor' && project.professor._id.toString() !== req.user.id) {
+    if (req.user.role === 'professor' && project.professor._id.toString() !== req.user.id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized to view this project' });
     }
 
@@ -116,7 +116,7 @@ const updateProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ success: false, message: 'Project not found' });
-    if (project.professor.toString() !== req.user.id) {
+    if (project.professor.toString() !== req.user.id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 

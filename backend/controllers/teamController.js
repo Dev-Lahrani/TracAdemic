@@ -1,0 +1,108 @@
+const Team = require('../models/Team');
+const Project = require('../models/Project');
+const WeeklyUpdate = require('../models/WeeklyUpdate');
+
+// @desc    Get teams for a project
+// @route   GET /api/teams/project/:projectId
+// @access  Private
+const getProjectTeams = async (req, res) => {
+  try {
+    const teams = await Team.find({ project: req.params.projectId }).populate(
+      'members.user',
+      'name email department'
+    );
+    res.json({ success: true, teams, count: teams.length });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get a single team
+// @route   GET /api/teams/:id
+// @access  Private
+const getTeam = async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id).populate('members.user', 'name email department');
+    if (!team) return res.status(404).json({ success: false, message: 'Team not found' });
+    res.json({ success: true, team });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get team contribution analytics
+// @route   GET /api/teams/:id/analytics
+// @access  Private
+const getTeamAnalytics = async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id).populate('members.user', 'name email');
+    if (!team) return res.status(404).json({ success: false, message: 'Team not found' });
+
+    const updates = await WeeklyUpdate.find({ team: team._id })
+      .populate('student', 'name email')
+      .sort({ weekNumber: 1 });
+
+    // Build contribution data per member
+    const memberStats = {};
+    team.members.forEach((m) => {
+      memberStats[m.user._id.toString()] = {
+        student: m.user,
+        role: m.role,
+        totalHours: 0,
+        totalUpdates: 0,
+        avgContribution: 0,
+        contributions: [],
+        blockerCount: 0,
+        moodHistory: [],
+      };
+    });
+
+    updates.forEach((update) => {
+      const sid = update.student._id.toString();
+      if (memberStats[sid]) {
+        memberStats[sid].totalHours += update.hoursWorked || 0;
+        memberStats[sid].totalUpdates++;
+        memberStats[sid].contributions.push({
+          week: update.weekNumber,
+          percentage: update.contributionPercentage || 0,
+          hours: update.hoursWorked || 0,
+        });
+        memberStats[sid].blockerCount += update.blockers.filter((b) => !b.resolved).length;
+        memberStats[sid].moodHistory.push({ week: update.weekNumber, mood: update.mood });
+      }
+    });
+
+    // Calculate avg contribution
+    Object.values(memberStats).forEach((stat) => {
+      if (stat.contributions.length > 0) {
+        stat.avgContribution =
+          stat.contributions.reduce((sum, c) => sum + c.percentage, 0) / stat.contributions.length;
+      }
+    });
+
+    const totalUpdatesExpected = team.members.length * (updates.length > 0 ? Math.max(...updates.map((u) => u.weekNumber)) : 0);
+
+    res.json({
+      success: true,
+      analytics: {
+        team,
+        memberStats: Object.values(memberStats),
+        totalUpdates: updates.length,
+        submissionRate: totalUpdatesExpected > 0 ? (updates.length / totalUpdatesExpected) * 100 : 0,
+        weeklyTrend: [...new Set(updates.map((u) => u.weekNumber))].map((week) => {
+          const weekUpdates = updates.filter((u) => u.weekNumber === week);
+          return {
+            week,
+            updateCount: weekUpdates.length,
+            totalHours: weekUpdates.reduce((sum, u) => sum + (u.hoursWorked || 0), 0),
+            blockers: weekUpdates.reduce((sum, u) => sum + u.blockers.filter((b) => !b.resolved).length, 0),
+          };
+        }),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getProjectTeams, getTeam, getTeamAnalytics };

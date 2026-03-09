@@ -1,0 +1,9 @@
+fastapi==0.110.0
+uvicorn==0.27.1
+pydantic==2.6.1
+httpx==0.26.0
+python-dotenv==1.0.1
+# Optional: uncomment to use a local LLM via llama-cpp-python
+# llama-cpp-python==0.2.55
+# Optional: use Ollama client
+# ollama==0.1.8

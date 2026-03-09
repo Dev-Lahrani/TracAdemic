@@ -1,0 +1,44 @@
+# Dependency directories
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Build output
+dist/
+build/
+*.egg-info/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# MongoDB data
+mongo-data/
+
+# Test coverage
+coverage/
+.nyc_output/
+htmlcov/
+
+# Vitest / Jest cache
+.vitest-cache/
+
+# Python test cache
+.pytest_cache/

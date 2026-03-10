@@ -211,3 +211,82 @@ const getLatestInsight = async (req, res) => {
 };
 
 module.exports = { generateSummary, getInsights, getLatestInsight };
+
+// @desc    Generate AI summary (alias endpoint)
+// @route   POST /api/ai/generate-summary
+// @access  Private (Professor)
+const generateSummaryAlias = generateSummary;
+
+// @desc    Detect contribution imbalance among team members
+// @route   POST /api/ai/contribution-analysis
+// @access  Private (Professor)
+const analyzeContributions = async (req, res) => {
+  try {
+    const { projectId, teamId, weekNumber } = req.body;
+
+    const query = { project: projectId };
+    if (teamId) query.team = teamId;
+    if (weekNumber) query.weekNumber = parseInt(weekNumber);
+
+    const updates = await WeeklyUpdate.find(query).populate('student', 'name email');
+
+    if (!updates.length) {
+      return res.status(404).json({ success: false, message: 'No updates found for analysis' });
+    }
+
+    const studentContribs = {};
+    updates.forEach((u) => {
+      const sid = u.student._id.toString();
+      if (!studentContribs[sid]) {
+        studentContribs[sid] = { student: u.student, percentages: [], hours: [], updates: 0 };
+      }
+      studentContribs[sid].percentages.push(u.contributionPercentage || 0);
+      studentContribs[sid].hours.push(u.hoursWorked || 0);
+      studentContribs[sid].updates++;
+    });
+
+    const members = Object.values(studentContribs).map((m) => ({
+      student: m.student,
+      avgContribution: m.percentages.reduce((a, b) => a + b, 0) / m.percentages.length,
+      totalHours: m.hours.reduce((a, b) => a + b, 0),
+      updateCount: m.updates,
+    }));
+
+    const avg = members.reduce((sum, m) => sum + m.avgContribution, 0) / members.length;
+    const imbalanced = members.filter((m) => m.avgContribution < avg * 0.5);
+
+    let summaryText = `Contribution analysis for ${members.length} team member(s). `;
+    summaryText += `Team average contribution: ${avg.toFixed(1)}%. `;
+    if (imbalanced.length > 0) {
+      summaryText += `${imbalanced.length} member(s) are contributing significantly below average: ${imbalanced.map((m) => m.student.name).join(', ')}.`;
+    } else {
+      summaryText += 'Contributions appear balanced across the team.';
+    }
+
+    const insight = await AIInsight.create({
+      project: projectId,
+      team: teamId || null,
+      weekNumber: weekNumber ? parseInt(weekNumber) : undefined,
+      type: 'contribution_analysis',
+      summary: summaryText,
+      riskLevel: imbalanced.length > 0 ? 'medium' : 'low',
+      riskFactors: imbalanced.length > 0 ? [`${imbalanced.length} member(s) with low contribution`] : [],
+      recommendations: imbalanced.length > 0
+        ? ['Follow up with low-contributing members', 'Consider redistributing workload']
+        : ['Contribution balance is healthy'],
+      contributionBreakdown: members.map((m) => ({
+        student: m.student._id,
+        studentName: m.student.name,
+        percentage: m.avgContribution,
+      })),
+      generatedBy: 'rule-based',
+      details: { memberCount: members.length, averageContribution: avg, imbalancedCount: imbalanced.length },
+    });
+
+    res.status(201).json({ success: true, insight, members });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+Object.assign(module.exports, { generateSummaryAlias, analyzeContributions });

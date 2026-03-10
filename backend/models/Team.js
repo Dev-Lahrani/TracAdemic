@@ -30,8 +30,21 @@ const TeamSchema = new mongoose.Schema(
         },
       },
     ],
+    inviteToken: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   { timestamps: true }
 );
+
+// Generate invite token pre-save
+TeamSchema.pre('save', function (next) {
+  if (!this.inviteToken) {
+    this.inviteToken = Math.random().toString(36).substring(2, 10).toUpperCase();
+  }
+  next();
+});
 
 module.exports = mongoose.model('Team', TeamSchema);

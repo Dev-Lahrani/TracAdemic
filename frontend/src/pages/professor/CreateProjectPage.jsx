@@ -18,6 +18,8 @@ const CreateProjectPage = () => {
     startDate: '',
     endDate: '',
     tags: '',
+    minTeamSize: 1,
+    maxTeamSize: 5,
   });
 
   const [milestones, setMilestones] = useState([
@@ -155,6 +157,31 @@ const CreateProjectPage = () => {
               value={form.tags}
               onChange={(e) => setForm({ ...form, tags: e.target.value })}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Min Team Size</label>
+              <input
+                type="number"
+                className="input-field"
+                min={1}
+                max={form.maxTeamSize}
+                value={form.minTeamSize}
+                onChange={(e) => setForm({ ...form, minTeamSize: parseInt(e.target.value) || 1 })}
+              />
+            </div>
+            <div>
+              <label className="label">Max Team Size</label>
+              <input
+                type="number"
+                className="input-field"
+                min={form.minTeamSize}
+                max={50}
+                value={form.maxTeamSize}
+                onChange={(e) => setForm({ ...form, maxTeamSize: parseInt(e.target.value) || 5 })}
+              />
+            </div>
           </div>
         </div>
 

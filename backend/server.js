@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
@@ -13,6 +14,10 @@ const projectRoutes = require('./routes/projects');
 const updateRoutes = require('./routes/updates');
 const teamRoutes = require('./routes/teams');
 const aiRoutes = require('./routes/ai');
+const documentRoutes = require('./routes/documents');
+const doubtRoutes = require('./routes/doubts');
+const evaluationRoutes = require('./routes/evaluations');
+const industryRoutes = require('./routes/industry');
 
 const app = express();
 
@@ -57,6 +62,9 @@ app.use(globalLimiter);
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Logging
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
@@ -73,6 +81,10 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/updates', updateRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/ai', aiLimiter, aiRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/doubts', doubtRoutes);
+app.use('/api/evaluations', evaluationRoutes);
+app.use('/api/industry', industryRoutes);
 
 // 404 handler
 app.use((req, res) => {

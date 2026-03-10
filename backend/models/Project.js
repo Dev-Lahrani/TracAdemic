@@ -53,6 +53,16 @@ const ProjectSchema = new mongoose.Schema(
       default: 'active',
     },
     tags: [{ type: String }],
+    minTeamSize: {
+      type: Number,
+      default: 1,
+      min: [1, 'Minimum team size must be at least 1'],
+    },
+    maxTeamSize: {
+      type: Number,
+      default: 10,
+      min: [1, 'Maximum team size must be at least 1'],
+    },
   },
   { timestamps: true }
 );

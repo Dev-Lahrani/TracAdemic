@@ -67,11 +67,12 @@ ProjectPulse provides:
 - Recommendation engine
 
 ### 🤖 AI Features
-- Weekly progress summarisation
+- Weekly progress summarisation (Ollama LLM by default)
 - Risk assessment (blockers, mood, milestone deadlines)
-- Contribution pattern analysis
+- Contribution pattern analysis (LLM-powered)
 - Automated recommendations for professors
-- Supports local LLM backends (Ollama, llama.cpp) with rule-based fallback
+- Automatic fallback to rule-based analysis when Ollama is unavailable
+- Retry logic with backoff for reliable LLM communication
 
 ---
 
@@ -175,8 +176,9 @@ npm run dev              # Starts on http://localhost:5000
 ```bash
 cd ai-service
 pip install -r requirements.txt
+# Ensure Ollama is running: ollama run mistral
 uvicorn main:app --reload --port 8000
-# Starts on http://localhost:8000
+# Starts on http://localhost:8000 (defaults to Ollama backend)
 ```
 
 **4. Frontend**
@@ -190,20 +192,42 @@ npm run dev              # Starts on http://localhost:5173
 
 ## AI Pipeline
 
-The AI service (`ai-service/`) is a standalone FastAPI microservice.
+The AI service (`ai-service/`) is a standalone FastAPI microservice that defaults to **Ollama** for local LLM-powered summaries.
 
 ### Backends
 
-| Backend    | Description                         | Setup Required                          |
-|------------|-------------------------------------|-----------------------------------------|
-| `mock`     | Rule-based (default, no LLM needed) | None                                    |
-| `ollama`   | Ollama local LLM                    | `ollama run mistral` (or any model)     |
-| `llamacpp` | llama.cpp Python bindings           | `pip install llama-cpp-python`          |
+| Backend    | Description                                  | Setup Required                          |
+|------------|----------------------------------------------|-----------------------------------------|
+| `ollama`   | Ollama local LLM **(default)**               | `ollama run mistral` (or any model)     |
+| `mock`     | Rule-based fallback (no LLM needed)          | None                                    |
 
-Set the backend via environment variable:
+The service automatically falls back to the rule-based backend if Ollama is unreachable (with retry logic).
+
+### Quick start with Ollama
+
 ```bash
-LLM_BACKEND=ollama OLLAMA_MODEL=mistral uvicorn main:app --port 8000
+# 1. Install Ollama (https://ollama.ai)
+# 2. Pull a model
+ollama run mistral
+
+# 3. Start the AI service (defaults to ollama)
+cd ai-service
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 ```
+
+To explicitly use the mock backend instead:
+```bash
+LLM_BACKEND=mock uvicorn main:app --port 8000
+```
+
+### Endpoints
+
+| Method | Endpoint                  | Description                              |
+|--------|---------------------------|------------------------------------------|
+| GET    | `/health`                 | Service status + Ollama connectivity     |
+| POST   | `/summarize`              | Generate weekly summary via LLM          |
+| POST   | `/analyze-contributions`  | Contribution balance analysis via LLM    |
 
 ### Prompt strategy
 

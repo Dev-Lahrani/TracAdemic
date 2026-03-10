@@ -6,6 +6,7 @@ Supports:
 - mock      : Fast deterministic summaries (no LLM needed – fallback / testing)
 """
 
+import asyncio
 import json
 import logging
 import os
@@ -231,8 +232,6 @@ class Summarizer:
 
     async def _call_ollama(self, prompt: str, max_tokens: int = 500) -> str | None:
         """Call Ollama with retry logic. Returns None on failure."""
-        import asyncio
-
         for attempt in range(_MAX_RETRIES + 1):
             try:
                 async with httpx.AsyncClient(timeout=60.0) as client:

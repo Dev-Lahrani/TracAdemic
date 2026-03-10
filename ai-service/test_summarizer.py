@@ -234,7 +234,7 @@ class TestHelpers:
         assert Summarizer._calc_avg_mood(updates) == 3.0
 
     def test_calc_avg_mood_empty(self):
-        assert Summarizer._calc_avg_mood([]) == 3
+        assert Summarizer._calc_avg_mood([]) == 3.0
 
     def test_calc_avg_mood_all_struggling(self):
         updates = [{"mood": "struggling"}, {"mood": "struggling"}]

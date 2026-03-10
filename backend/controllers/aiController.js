@@ -137,7 +137,8 @@ const generateSummary = async (req, res) => {
       );
       summary = aiResponse.data.summary;
       generatedBy = 'llm';
-    } catch {
+    } catch (aiError) {
+      console.warn('AI summary service unavailable, using rule-based fallback:', aiError.message);
       summary = generateRuleBasedSummary(updates, project);
     }
 
@@ -269,7 +270,8 @@ const analyzeContributions = async (req, res) => {
       );
       summaryText = aiResponse.data.analysis;
       generatedBy = 'llm';
-    } catch {
+    } catch (aiError) {
+      console.warn('AI contribution analysis service unavailable, using rule-based fallback:', aiError.message);
       summaryText = `Contribution analysis for ${members.length} team member(s). `;
       summaryText += `Team average contribution: ${avg.toFixed(1)}%. `;
       if (imbalanced.length > 0) {

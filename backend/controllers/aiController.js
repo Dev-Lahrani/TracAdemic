@@ -222,6 +222,9 @@ const analyzeContributions = async (req, res) => {
   try {
     const { projectId, teamId, weekNumber } = req.body;
 
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ success: false, message: 'Project not found' });
+
     const query = { project: projectId };
     if (teamId) query.team = teamId;
     if (weekNumber) query.weekNumber = parseInt(weekNumber);
@@ -253,12 +256,27 @@ const analyzeContributions = async (req, res) => {
     const avg = members.reduce((sum, m) => sum + m.avgContribution, 0) / members.length;
     const imbalanced = members.filter((m) => m.avgContribution < avg * 0.5);
 
-    let summaryText = `Contribution analysis for ${members.length} team member(s). `;
-    summaryText += `Team average contribution: ${avg.toFixed(1)}%. `;
-    if (imbalanced.length > 0) {
-      summaryText += `${imbalanced.length} member(s) are contributing significantly below average: ${imbalanced.map((m) => m.student.name).join(', ')}.`;
-    } else {
-      summaryText += 'Contributions appear balanced across the team.';
+    let summaryText;
+    let generatedBy = 'rule-based';
+
+    // Try AI service for richer contribution analysis
+    try {
+      const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+      const aiResponse = await axios.post(
+        `${aiServiceUrl}/analyze-contributions`,
+        { updates: updates.map((u) => u.toObject()), project: project.toObject(), weekNumber: weekNumber || 1 },
+        { timeout: 15000 }
+      );
+      summaryText = aiResponse.data.analysis;
+      generatedBy = 'llm';
+    } catch {
+      summaryText = `Contribution analysis for ${members.length} team member(s). `;
+      summaryText += `Team average contribution: ${avg.toFixed(1)}%. `;
+      if (imbalanced.length > 0) {
+        summaryText += `${imbalanced.length} member(s) are contributing significantly below average: ${imbalanced.map((m) => m.student.name).join(', ')}.`;
+      } else {
+        summaryText += 'Contributions appear balanced across the team.';
+      }
     }
 
     const insight = await AIInsight.create({
@@ -277,7 +295,7 @@ const analyzeContributions = async (req, res) => {
         studentName: m.student.name,
         percentage: m.avgContribution,
       })),
-      generatedBy: 'rule-based',
+      generatedBy,
       details: { memberCount: members.length, averageContribution: avg, imbalancedCount: imbalanced.length },
     });
 

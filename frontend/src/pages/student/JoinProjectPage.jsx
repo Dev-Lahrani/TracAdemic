@@ -17,7 +17,7 @@ const JoinProjectPage = () => {
     setLoading(true);
     try {
       const { data } = await api.post('/projects/join', {
-        inviteCode: form.inviteCode.toUpperCase(),
+        inviteCode: form.inviteCode,
         teamName: form.teamName,
       });
       toast.success(`Successfully joined ${data.project.title}!`);

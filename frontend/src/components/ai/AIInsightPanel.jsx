@@ -2,11 +2,14 @@ import React from 'react';
 import { riskColor } from '../../utils/helpers';
 import { AlertTriangle, CheckCircle, TrendingUp, Users, Clock } from 'lucide-react';
 
-const RiskBadge = ({ level }) => (
-  <span className={riskColor(level)}>
-    {level?.charAt(0).toUpperCase() + level?.slice(1)} Risk
-  </span>
-);
+const RiskBadge = ({ level }) => {
+  const displayLevel = level ? level.charAt(0).toUpperCase() + level.slice(1) : 'Unknown';
+  return (
+    <span className={riskColor(level)}>
+      {displayLevel} Risk
+    </span>
+  );
+};
 
 const AIInsightPanel = ({ insight }) => {
   if (!insight) {

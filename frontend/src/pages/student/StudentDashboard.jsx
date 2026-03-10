@@ -11,14 +11,18 @@ const StudentDashboard = () => {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     api.get('/projects/student').then(({ data }) => {
       setProjects(data.projects);
-    }).catch(console.error).finally(() => setLoading(false));
+    }).catch(() => {
+      setError('Failed to load projects. Please try again.');
+    }).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LoadingSpinner text="Loading your projects…" />;
+  if (error) return <div className="card text-center py-12 text-red-600">{error}</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -81,7 +81,7 @@ const ProjectDetailPage = () => {
       week: `W${week}`,
       updates: weekUpdates.length,
       hours: weekUpdates.reduce((sum, u) => sum + (u.hoursWorked || 0), 0),
-      blockers: weekUpdates.reduce((sum, u) => sum + u.blockers.filter((b) => !b.resolved).length, 0),
+      blockers: weekUpdates.reduce((sum, u) => sum + (u.blockers || []).filter((b) => !b.resolved).length, 0),
     };
   });
 
@@ -215,17 +215,20 @@ const ProjectDetailPage = () => {
                   <span className="badge-blue">{team.members.length} member{team.members.length !== 1 ? 's' : ''}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {team.members.map((member) => (
-                    <div key={member.user._id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-                      <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700 flex-shrink-0">
-                        {member.user.name?.charAt(0).toUpperCase()}
+                  {team.members.map((member) => {
+                    const userData = typeof member.user === 'object' && member.user ? member.user : { _id: member.user || member._id, name: 'Unknown' };
+                    return (
+                      <div key={userData._id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+                        <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700 flex-shrink-0">
+                          {(userData.name || 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{userData.name || 'Unknown'}</p>
+                          <p className="text-xs text-gray-500">{member.role === 'leader' ? '👑 Leader' : 'Member'}</p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{member.user.name}</p>
-                        <p className="text-xs text-gray-500">{member.role === 'leader' ? '👑 Leader' : 'Member'}</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))
@@ -246,7 +249,7 @@ const ProjectDetailPage = () => {
                 <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700">
-                      {update.student?.name?.charAt(0).toUpperCase()}
+                      {(update.student?.name || 'S').charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{update.student?.name}</p>
@@ -256,10 +259,10 @@ const ProjectDetailPage = () => {
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{moodEmoji(update.mood)}</span>
                     <span className="badge-gray">{update.hoursWorked}h</span>
-                    {update.blockers.filter((b) => !b.resolved).length > 0 && (
+                    {(update.blockers || []).filter((b) => !b.resolved).length > 0 && (
                       <span className="badge-red flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />
-                        {update.blockers.filter((b) => !b.resolved).length} blocker(s)
+                        {(update.blockers || []).filter((b) => !b.resolved).length} blocker(s)
                       </span>
                     )}
                   </div>

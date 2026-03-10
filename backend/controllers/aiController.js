@@ -289,4 +289,4 @@ const analyzeContributions = async (req, res) => {
   }
 };
 
-Object.assign(module.exports, { generateSummaryAlias, analyzeContributions });
+module.exports = { generateSummary, generateSummaryAlias, getInsights, getLatestInsight, analyzeContributions };

@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const crypto = require('crypto');
+
 const TeamSchema = new mongoose.Schema(
   {
     project: {
@@ -42,7 +44,7 @@ const TeamSchema = new mongoose.Schema(
 // Generate invite token pre-save
 TeamSchema.pre('save', function (next) {
   if (!this.inviteToken) {
-    this.inviteToken = Math.random().toString(36).substring(2, 10).toUpperCase();
+    this.inviteToken = crypto.randomBytes(5).toString('hex').toUpperCase();
   }
   next();
 });

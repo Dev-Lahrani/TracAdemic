@@ -48,7 +48,7 @@ const fileFilter = (_req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
+  limits: { fileSize: (parseInt(process.env.MAX_FILE_SIZE_MB, 10) || 50) * 1024 * 1024 },
 });
 
 router.use(protect);

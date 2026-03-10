@@ -2,6 +2,16 @@ const Evaluation = require('../models/Evaluation');
 const WeeklyUpdate = require('../models/WeeklyUpdate');
 const Team = require('../models/Team');
 
+// Grading formula weights
+const GRADING_WEIGHTS = {
+  contribution: 0.40,
+  submission: 0.30,
+  mood: 0.20,
+};
+const MAX_SUBMISSION_POINTS = 30;
+const POINTS_PER_SUBMISSION = 10;
+const MOOD_SCORES = { great: 100, good: 80, okay: 60, struggling: 40 };
+
 // @desc    Create or update an evaluation
 // @route   POST /api/evaluations
 // @access  Private (Professor)
@@ -91,23 +101,23 @@ const getSuggestedMarks = async (req, res) => {
     const totalHours = updates.reduce((sum, u) => sum + (u.hoursWorked || 0), 0);
     const avgContribution = updates.reduce((sum, u) => sum + (u.contributionPercentage || 0), 0) / updates.length;
     const submissionRate = updates.length;
-    const moodScores = { great: 100, good: 80, okay: 60, struggling: 40 };
-    const avgMoodScore = updates.reduce((sum, u) => sum + (moodScores[u.mood] || 60), 0) / updates.length;
+    const avgMoodScore = updates.reduce((sum, u) => sum + (MOOD_SCORES[u.mood] || 60), 0) / updates.length;
 
-    // Simple weighted formula
+    // Weighted grading formula
+    const submissionScore = Math.min(submissionRate * POINTS_PER_SUBMISSION, MAX_SUBMISSION_POINTS);
     const suggestedMarks = Math.min(
       100,
       Math.round(
-        avgContribution * 0.4 +
-        Math.min(submissionRate * 10, 30) * 0.333 +
-        avgMoodScore * 0.2
+        avgContribution * GRADING_WEIGHTS.contribution +
+        submissionScore * (GRADING_WEIGHTS.submission / (MAX_SUBMISSION_POINTS / 100)) +
+        avgMoodScore * GRADING_WEIGHTS.mood
       )
     );
 
     const reasoning = [
       `Average contribution: ${avgContribution.toFixed(1)}% across ${updates.length} submissions`,
       `Total hours logged: ${totalHours}`,
-      `Submission rate contributes ${Math.min(submissionRate * 10, 30).toFixed(0)} points`,
+      `Submission score: ${submissionScore.toFixed(0)}/${MAX_SUBMISSION_POINTS} points`,
       `Team morale score: ${avgMoodScore.toFixed(0)}/100`,
     ].join('. ');
 

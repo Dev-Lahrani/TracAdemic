@@ -112,10 +112,15 @@ const removeMember = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Only the team leader or professor can remove members' });
     }
 
-    // Cannot remove the leader themselves (only professor can)
+    // Cannot remove the leader (only professor can) or self-removal by leader
     const targetMember = team.members.find((m) => m.user._id.toString() === req.params.userId);
     if (targetMember && targetMember.role === 'leader' && req.user.role !== 'professor') {
       return res.status(403).json({ success: false, message: 'Only a professor can remove the team leader' });
+    }
+
+    // Prevent leader from accidentally removing themselves (would leave team leaderless)
+    if (req.params.userId === req.user.id && isLeader && req.user.role !== 'professor') {
+      return res.status(400).json({ success: false, message: 'A leader cannot remove themselves. Ask a professor to reassign leadership first.' });
     }
 
     team.members = team.members.filter((m) => m.user._id.toString() !== req.params.userId);

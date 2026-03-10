@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/common/Navbar';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
@@ -105,18 +106,20 @@ const AppRoutes = () => {
 
 const App = () => (
   <BrowserRouter>
-    <AuthProvider>
-      <AppRoutes />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: { fontSize: '14px' },
-          success: { iconTheme: { primary: '#22c55e', secondary: 'white' } },
-          error: { iconTheme: { primary: '#ef4444', secondary: 'white' } },
-        }}
-      />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppRoutes />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: { fontSize: '14px' },
+            success: { iconTheme: { primary: '#22c55e', secondary: 'white' } },
+            error: { iconTheme: { primary: '#ef4444', secondary: 'white' } },
+          }}
+        />
+      </AuthProvider>
+    </ThemeProvider>
   </BrowserRouter>
 );
 

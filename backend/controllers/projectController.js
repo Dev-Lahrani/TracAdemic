@@ -8,7 +8,7 @@ const AIInsight = require('../models/AIInsight');
 // @access  Private (Professor only)
 const createProject = async (req, res) => {
   try {
-    const { title, description, course, semester, startDate, endDate, milestones, tags } = req.body;
+    const { title, description, course, semester, startDate, endDate, milestones, tags, minTeamSize, maxTeamSize } = req.body;
 
     const project = await Project.create({
       title,
@@ -20,6 +20,8 @@ const createProject = async (req, res) => {
       milestones: milestones || [],
       tags: tags || [],
       professor: req.user.id,
+      minTeamSize: minTeamSize || 1,
+      maxTeamSize: maxTeamSize || 10,
     });
 
     res.status(201).json({ success: true, project });
@@ -120,10 +122,26 @@ const updateProject = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    const updated = await Project.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const updated = await Project.findByIdAndUpdate(
+      req.params.id,
+      {
+        title: req.body.title,
+        description: req.body.description,
+        course: req.body.course,
+        semester: req.body.semester,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate,
+        milestones: req.body.milestones,
+        tags: req.body.tags,
+        status: req.body.status,
+        minTeamSize: req.body.minTeamSize,
+        maxTeamSize: req.body.maxTeamSize,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
     res.json({ success: true, project: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -162,6 +180,13 @@ const joinProject = async (req, res) => {
         members: [{ user: req.user.id, role: 'leader' }],
       });
     } else {
+      // Enforce max team size
+      if (project.maxTeamSize && team.members.length >= project.maxTeamSize) {
+        return res.status(400).json({
+          success: false,
+          message: `This team has reached the maximum size of ${project.maxTeamSize} members`,
+        });
+      }
       team.members.push({ user: req.user.id, role: 'member' });
       await team.save();
     }

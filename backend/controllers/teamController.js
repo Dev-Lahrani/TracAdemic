@@ -30,6 +30,133 @@ const getTeam = async (req, res) => {
   }
 };
 
+// @desc    Create a team for a project (faculty)
+// @route   POST /api/teams
+// @access  Private (Professor)
+const createTeam = async (req, res) => {
+  try {
+    const { projectId, name, leaderId } = req.body;
+
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ success: false, message: 'Project not found' });
+    if (project.professor.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized to manage this project' });
+    }
+
+    const members = [];
+    if (leaderId) {
+      members.push({ user: leaderId, role: 'leader' });
+    }
+
+    const team = await Team.create({ project: projectId, name, members });
+    await team.populate('members.user', 'name email department');
+    res.status(201).json({ success: true, team });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Invite a member to team (group leader)
+// @route   POST /api/teams/:id/invite
+// @access  Private (Leader or Professor)
+const inviteMember = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const team = await Team.findById(req.params.id).populate('members.user', 'name email');
+    if (!team) return res.status(404).json({ success: false, message: 'Team not found' });
+
+    // Check permission: leader or professor
+    const isLeader = team.members.some(
+      (m) => m.user._id.toString() === req.user.id && m.role === 'leader'
+    );
+    if (!isLeader && req.user.role !== 'professor') {
+      return res.status(403).json({ success: false, message: 'Only the team leader or professor can invite members' });
+    }
+
+    // Check team size limit
+    const project = await Project.findById(team.project);
+    if (project && project.maxTeamSize && team.members.length >= project.maxTeamSize) {
+      return res.status(400).json({
+        success: false,
+        message: `Team has reached maximum size of ${project.maxTeamSize}`,
+      });
+    }
+
+    // Check if already a member
+    const alreadyMember = team.members.some((m) => m.user._id.toString() === userId);
+    if (alreadyMember) {
+      return res.status(400).json({ success: false, message: 'User is already a team member' });
+    }
+
+    team.members.push({ user: userId, role: 'member' });
+    await team.save();
+    await team.populate('members.user', 'name email department');
+    res.json({ success: true, team });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Remove a member from team (group leader or professor)
+// @route   DELETE /api/teams/:id/members/:userId
+// @access  Private (Leader or Professor)
+const removeMember = async (req, res) => {
+  try {
+    const team = await Team.findById(req.params.id).populate('members.user', 'name email');
+    if (!team) return res.status(404).json({ success: false, message: 'Team not found' });
+
+    const isLeader = team.members.some(
+      (m) => m.user._id.toString() === req.user.id && m.role === 'leader'
+    );
+    if (!isLeader && req.user.role !== 'professor') {
+      return res.status(403).json({ success: false, message: 'Only the team leader or professor can remove members' });
+    }
+
+    // Cannot remove the leader (only professor can) or self-removal by leader
+    const targetMember = team.members.find((m) => m.user._id.toString() === req.params.userId);
+    if (targetMember && targetMember.role === 'leader' && req.user.role !== 'professor') {
+      return res.status(403).json({ success: false, message: 'Only a professor can remove the team leader' });
+    }
+
+    // Prevent leader from accidentally removing themselves (would leave team leaderless)
+    if (req.params.userId === req.user.id && isLeader && req.user.role !== 'professor') {
+      return res.status(400).json({ success: false, message: 'A leader cannot remove themselves. Ask a professor to reassign leadership first.' });
+    }
+
+    team.members = team.members.filter((m) => m.user._id.toString() !== req.params.userId);
+    await team.save();
+    await team.populate('members.user', 'name email department');
+    res.json({ success: true, team });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Assign a new leader (faculty only)
+// @route   PUT /api/teams/:id/leader
+// @access  Private (Professor)
+const assignLeader = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const team = await Team.findById(req.params.id);
+    if (!team) return res.status(404).json({ success: false, message: 'Team not found' });
+
+    const member = team.members.find((m) => m.user.toString() === userId);
+    if (!member) return res.status(404).json({ success: false, message: 'User is not a team member' });
+
+    // Demote current leader(s), promote new leader
+    team.members.forEach((m) => {
+      m.role = m.user.toString() === userId ? 'leader' : 'member';
+    });
+
+    await team.save();
+    await team.populate('members.user', 'name email department');
+    res.json({ success: true, team });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get team contribution analytics
 // @route   GET /api/teams/:id/analytics
 // @access  Private
@@ -105,4 +232,4 @@ const getTeamAnalytics = async (req, res) => {
   }
 };
 
-module.exports = { getProjectTeams, getTeam, getTeamAnalytics };
+module.exports = { getProjectTeams, getTeam, createTeam, inviteMember, removeMember, assignLeader, getTeamAnalytics };

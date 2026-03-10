@@ -119,7 +119,7 @@ const removeMember = async (req, res) => {
     }
 
     // Prevent leader from accidentally removing themselves (would leave team leaderless)
-    if (req.params.userId === req.user.id && isLeader && req.user.role !== 'professor') {
+    if (req.params.userId === req.user.id.toString() && isLeader && req.user.role !== 'professor') {
       return res.status(400).json({ success: false, message: 'A leader cannot remove themselves. Ask a professor to reassign leadership first.' });
     }
 
@@ -194,7 +194,7 @@ const getTeamAnalytics = async (req, res) => {
           percentage: update.contributionPercentage || 0,
           hours: update.hoursWorked || 0,
         });
-        memberStats[sid].blockerCount += update.blockers.filter((b) => !b.resolved).length;
+        memberStats[sid].blockerCount += (update.blockers || []).filter((b) => !b.resolved).length;
         memberStats[sid].moodHistory.push({ week: update.weekNumber, mood: update.mood });
       }
     });
@@ -222,7 +222,7 @@ const getTeamAnalytics = async (req, res) => {
             week,
             updateCount: weekUpdates.length,
             totalHours: weekUpdates.reduce((sum, u) => sum + (u.hoursWorked || 0), 0),
-            blockers: weekUpdates.reduce((sum, u) => sum + u.blockers.filter((b) => !b.resolved).length, 0),
+            blockers: weekUpdates.reduce((sum, u) => sum + (u.blockers || []).filter((b) => !b.resolved).length, 0),
           };
         }),
       },

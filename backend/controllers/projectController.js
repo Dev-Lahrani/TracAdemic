@@ -90,7 +90,7 @@ const getProject = async (req, res) => {
     }
 
     // Check authorization
-    if (req.user.role === 'professor' && project.professor._id.toString() !== req.user.id.toString()) {
+    if (req.user.role === 'professor' && (!project.professor || project.professor._id.toString() !== req.user.id.toString())) {
       return res.status(403).json({ success: false, message: 'Not authorized to view this project' });
     }
 
@@ -98,7 +98,7 @@ const getProject = async (req, res) => {
 
     if (req.user.role === 'student') {
       const isMember = teams.some((team) =>
-        team.members.some((m) => m.user._id.toString() === req.user.id)
+        team.members.some((m) => m.user._id.toString() === req.user.id.toString())
       );
       if (!isMember) {
         return res.status(403).json({ success: false, message: 'Not authorized to view this project' });
@@ -224,7 +224,7 @@ const getProjectProgress = async (req, res) => {
         weeklyStats[update.weekNumber] = { updates: 0, blockers: 0, totalHours: 0 };
       }
       weeklyStats[update.weekNumber].updates++;
-      weeklyStats[update.weekNumber].blockers += update.blockers.filter((b) => !b.resolved).length;
+      weeklyStats[update.weekNumber].blockers += (update.blockers || []).filter((b) => !b.resolved).length;
       weeklyStats[update.weekNumber].totalHours += update.hoursWorked || 0;
     });
 
@@ -237,8 +237,8 @@ const getProjectProgress = async (req, res) => {
         currentWeek: Math.max(1, currentWeek),
         weeklyStats,
         recentUpdates: allUpdates.slice(0, 10),
-        completedMilestones: project.milestones.filter((m) => m.completed).length,
-        totalMilestones: project.milestones.length,
+        completedMilestones: (project.milestones || []).filter((m) => m.completed).length,
+        totalMilestones: (project.milestones || []).length,
       },
     });
   } catch (error) {

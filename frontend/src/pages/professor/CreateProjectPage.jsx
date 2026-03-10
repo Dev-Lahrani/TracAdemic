@@ -43,6 +43,12 @@ const CreateProjectPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validate dates
+    if (new Date(form.startDate) >= new Date(form.endDate)) {
+      return setError('End date must be after start date.');
+    }
+
     setLoading(true);
 
     try {

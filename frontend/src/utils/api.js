@@ -15,10 +15,12 @@ api.interceptors.request.use((config) => {
 });
 
 // Handle 401 globally – redirect to login
+let isRedirecting = false;
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isRedirecting) {
+      isRedirecting = true;
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

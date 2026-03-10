@@ -38,7 +38,7 @@ const SubmitUpdatePage = () => {
           t.members.some((m) => {
             const uid = m.user?._id || m.user;
             const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-            return uid === storedUser.id;
+            return uid === storedUser.id || uid === storedUser._id;
           })
         );
         if (myTeam) setTeamId(myTeam._id);
@@ -90,6 +90,12 @@ const SubmitUpdatePage = () => {
     }
     if (!form.individualContribution.trim()) {
       return setError('Individual contribution summary is required.');
+    }
+    if (form.contributionPercentage < 0 || form.contributionPercentage > 100) {
+      return setError('Contribution percentage must be between 0 and 100.');
+    }
+    if (form.hoursWorked < 0) {
+      return setError('Hours worked cannot be negative.');
     }
 
     setError('');

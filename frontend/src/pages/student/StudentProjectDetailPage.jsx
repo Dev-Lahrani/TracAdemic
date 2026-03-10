@@ -16,6 +16,7 @@ const StudentProjectDetailPage = () => {
   const [teamUpdates, setTeamUpdates] = useState([]);
   const [latestInsight, setLatestInsight] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('timeline');
 
   useEffect(() => {
@@ -35,7 +36,7 @@ const StudentProjectDetailPage = () => {
         const teamRes = await api.get(`/updates/project/${projectId}?weekNumber=${week}`);
         setTeamUpdates(teamRes.data.updates);
       } catch (err) {
-        console.error(err);
+        setError('Failed to load project. Please refresh the page.');
       } finally {
         setLoading(false);
       }
@@ -44,6 +45,7 @@ const StudentProjectDetailPage = () => {
   }, [projectId]);
 
   if (loading) return <LoadingSpinner text="Loading project…" />;
+  if (error) return <div className="card text-center py-12 text-red-600">{error}</div>;
   if (!project) return <div className="card text-center py-12 text-gray-500">Project not found.</div>;
 
   const totalWeeks = getWeeksBetween(project.startDate, project.endDate);
@@ -184,7 +186,7 @@ const StudentProjectDetailPage = () => {
                 {teamUpdates.map((update) => (
                   <div key={update._id} className="flex items-start gap-3 bg-gray-50 rounded-lg p-3">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700 flex-shrink-0">
-                      {update.student?.name?.charAt(0).toUpperCase()}
+                      {(update.student?.name || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
@@ -244,7 +246,7 @@ const StudentProjectDetailPage = () => {
                 {update.blockers?.filter((b) => !b.resolved).length > 0 && (
                   <div className="mt-3 flex items-center gap-1.5 text-xs text-red-600">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    {update.blockers.filter((b) => !b.resolved).length} active blocker(s)
+                    {(update.blockers || []).filter((b) => !b.resolved).length} active blocker(s)
                   </div>
                 )}
               </div>
@@ -262,17 +264,20 @@ const StudentProjectDetailPage = () => {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {project.teams?.flatMap((t) =>
-              t.members.map((m) => (
-                <div key={m.user._id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700">
-                    {m.user.name?.charAt(0).toUpperCase()}
+              (t.members || []).map((m) => {
+                const userData = typeof m.user === 'object' && m.user ? m.user : { _id: m.user || m._id, name: 'Unknown' };
+                return (
+                  <div key={userData._id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700">
+                      {(userData.name || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{userData.name || 'Unknown'}</p>
+                      <p className="text-xs text-gray-500">{m.role === 'leader' ? '👑 Team Leader' : 'Member'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{m.user.name}</p>
-                    <p className="text-xs text-gray-500">{m.role === 'leader' ? '👑 Team Leader' : 'Member'}</p>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

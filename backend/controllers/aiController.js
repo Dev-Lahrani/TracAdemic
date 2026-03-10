@@ -12,8 +12,8 @@ const generateRuleBasedSummary = (updates, project) => {
 
   const totalHours = updates.reduce((sum, u) => sum + (u.hoursWorked || 0), 0);
   const avgHours = (totalHours / updates.length).toFixed(1);
-  const blockers = updates.flatMap((u) => u.blockers.filter((b) => !b.resolved));
-  const completedTaskCount = updates.reduce((sum, u) => sum + u.completedTasks.length, 0);
+  const blockers = updates.flatMap((u) => (u.blockers || []).filter((b) => !b.resolved));
+  const completedTaskCount = updates.reduce((sum, u) => sum + (u.completedTasks || []).length, 0);
   const moods = { great: 0, good: 0, okay: 0, struggling: 0 };
   updates.forEach((u) => { if (u.mood) moods[u.mood]++; });
   const dominantMood = Object.entries(moods).sort((a, b) => b[1] - a[1])[0][0];
@@ -58,7 +58,7 @@ const assessRisk = (updates, project, weekNumber) => {
   }
 
   // Risk: many unresolved blockers
-  const activeBlockers = updates.flatMap((u) => u.blockers.filter((b) => !b.resolved));
+  const activeBlockers = updates.flatMap((u) => (u.blockers || []).filter((b) => !b.resolved));
   if (activeBlockers.length >= 3) {
     riskFactors.push(`${activeBlockers.length} unresolved blockers reported`);
     riskLevel = riskLevel === 'high' ? 'critical' : 'high';
@@ -76,7 +76,7 @@ const assessRisk = (updates, project, weekNumber) => {
 
   // Risk: approaching deadline
   if (progressPercent > 75) {
-    const incompleteMilestones = project.milestones.filter((m) => !m.completed && new Date(m.dueDate) > Date.now());
+    const incompleteMilestones = (project.milestones || []).filter((m) => !m.completed && new Date(m.dueDate) > Date.now());
     if (incompleteMilestones.length > 0) {
       riskFactors.push(`${incompleteMilestones.length} milestone(s) pending with >75% of project timeline elapsed`);
       if (riskLevel !== 'critical') riskLevel = 'high';
@@ -164,7 +164,7 @@ const generateSummary = async (req, res) => {
       details: {
         updateCount: updates.length,
         totalHours: updates.reduce((sum, u) => sum + (u.hoursWorked || 0), 0),
-        activeBlockers: updates.flatMap((u) => u.blockers.filter((b) => !b.resolved)).length,
+        activeBlockers: updates.flatMap((u) => (u.blockers || []).filter((b) => !b.resolved)).length,
       },
     });
 
@@ -209,8 +209,6 @@ const getLatestInsight = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-module.exports = { generateSummary, getInsights, getLatestInsight };
 
 // @desc    Generate AI summary (alias endpoint)
 // @route   POST /api/ai/generate-summary

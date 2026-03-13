@@ -97,6 +97,17 @@ jest.mock('../models/Application', () => ({
   create: jest.fn(),
 }));
 
+// Mock axios to prevent real HTTP calls in tests
+jest.mock('axios', () => ({
+  default: {
+    get: jest.fn(),
+    post: jest.fn(),
+    create: jest.fn(() => ({ get: jest.fn(), post: jest.fn() })),
+  },
+  get: jest.fn(),
+  post: jest.fn(),
+}));
+
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 
@@ -621,5 +632,128 @@ describe('POST /api/projects (team size fields)', () => {
     expect(res.status).toBe(201);
     expect(res.body.project.minTeamSize).toBe(2);
     expect(res.body.project.maxTeamSize).toBe(4);
+  });
+});
+
+// ---- GitHub Contribution Verification ----
+describe('GET /api/github/contribution/:studentId', () => {
+  it('returns authenticity score from updates when no github username provided', async () => {
+    mockFindByIdForAuth(PROFESSOR);
+    User.findById
+      .mockReturnValueOnce({ select: jest.fn().mockResolvedValue(PROFESSOR) }) // auth middleware
+      .mockResolvedValueOnce(STUDENT); // controller lookup
+    Team.findOne.mockResolvedValue({ _id: 'team1' });
+    WeeklyUpdate.find.mockReturnValue({
+      sort: jest.fn().mockResolvedValue([
+        { weekNumber: 1, hoursWorked: 10, contributionPercentage: 25, completedTasks: [], blockers: [], mood: 'good' },
+        { weekNumber: 2, hoursWorked: 8, contributionPercentage: 20, completedTasks: [], blockers: [], mood: 'okay' },
+      ]),
+    });
+
+    const res = await request(app)
+      .get(`/api/github/contribution/${STUDENT._id}?projectId=proj1`)
+      .set('Authorization', `Bearer ${makeToken(PROFESSOR)}`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.authenticityScore).toBeDefined();
+    expect(res.body.authenticityScore.score).toBeGreaterThanOrEqual(0);
+  });
+
+  it('returns 404 for unknown student', async () => {
+    mockFindByIdForAuth(PROFESSOR);
+    User.findById
+      .mockReturnValueOnce({ select: jest.fn().mockResolvedValue(PROFESSOR) }) // auth middleware
+      .mockResolvedValueOnce(null); // student not found
+
+    const res = await request(app)
+      .get('/api/github/contribution/nonexistent')
+      .set('Authorization', `Bearer ${makeToken(PROFESSOR)}`);
+    expect(res.status).toBe(404);
+  });
+});
+
+// ---- AI Risk Prediction ----
+describe('GET /api/ai/risk/:projectId', () => {
+  it('returns risk level for a project', async () => {
+    mockFindByIdForAuth(PROFESSOR);
+    Project.findById.mockResolvedValue({
+      _id: 'proj1',
+      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      milestones: [],
+      toObject: jest.fn().mockReturnThis(),
+    });
+    WeeklyUpdate.find.mockReturnValue({
+      populate: jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockResolvedValue([
+            { weekNumber: 1, hoursWorked: 10, blockers: [], mood: 'good', student: { _id: 'stud456' }, team: { _id: 'team1' } },
+          ]),
+        }),
+      }),
+    });
+    Team.find.mockReturnValue({
+      populate: jest.fn().mockResolvedValue([
+        { _id: 'team1', members: [{ user: { _id: 'stud456' } }] },
+      ]),
+    });
+
+    const res = await request(app)
+      .get('/api/ai/risk/proj1')
+      .set('Authorization', `Bearer ${makeToken(PROFESSOR)}`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(['low', 'medium', 'high', 'critical']).toContain(res.body.riskLevel);
+    expect(Array.isArray(res.body.riskFactors)).toBe(true);
+  });
+});
+
+// ---- Academic Integrity Detection ----
+describe('GET /api/ai/integrity/:projectId', () => {
+  it('returns integrity analysis for a project (professor only)', async () => {
+    mockFindByIdForAuth(PROFESSOR);
+    Project.findById.mockResolvedValue({
+      _id: 'proj1',
+      startDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      milestones: [],
+    });
+    WeeklyUpdate.find.mockReturnValue({
+      populate: jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockResolvedValue([
+            {
+              weekNumber: 1, hoursWorked: 10, contributionPercentage: 25,
+              individualContribution: 'Implemented authentication module',
+              blockers: [], mood: 'good',
+              student: { _id: 'stud456', name: 'Alice' },
+              team: { _id: 'team1', name: 'Team Alpha' },
+            },
+          ]),
+        }),
+      }),
+    });
+    Team.find.mockReturnValue({
+      populate: jest.fn().mockResolvedValue([
+        { _id: 'team1', members: [{ user: { _id: 'stud456', name: 'Alice' } }] },
+      ]),
+    });
+
+    const res = await request(app)
+      .get('/api/ai/integrity/proj1')
+      .set('Authorization', `Bearer ${makeToken(PROFESSOR)}`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(typeof res.body.integrityScore).toBe('number');
+    expect(Array.isArray(res.body.flags)).toBe(true);
+  });
+
+  it('forbids student from accessing integrity analysis', async () => {
+    mockFindByIdForAuth(STUDENT);
+
+    const res = await request(app)
+      .get('/api/ai/integrity/proj1')
+      .set('Authorization', `Bearer ${makeToken(STUDENT)}`);
+    expect(res.status).toBe(403);
   });
 });

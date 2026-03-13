@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import StatCard from '../../components/common/StatCard';
-import { BookOpen, Users, FileText, Plus, TrendingUp, AlertTriangle } from 'lucide-react';
+import { BookOpen, Users, FileText, Plus, TrendingUp, AlertTriangle, BarChart3 } from 'lucide-react';
 import { formatDate } from '../../utils/helpers';
 
 const ProfessorDashboard = () => {
@@ -111,6 +111,17 @@ const ProfessorDashboard = () => {
                     </code>
                   </div>
                 )}
+
+                <div className="mt-3 flex items-center gap-2">
+                  <Link
+                    to={`/professor/projects/${project._id}/analytics`}
+                    className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    View Analytics
+                  </Link>
+                </div>
               </Link>
             ))}
           </div>

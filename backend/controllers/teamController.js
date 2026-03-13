@@ -207,7 +207,8 @@ const getTeamAnalytics = async (req, res) => {
       }
     });
 
-    const totalUpdatesExpected = team.members.length * (updates.length > 0 ? Math.max(...updates.map((u) => u.weekNumber)) : 0);
+    const maxWeek = updates.length > 0 ? Math.max(...updates.map((u) => u.weekNumber)) : 0;
+    const totalUpdatesExpected = team.members.length * maxWeek;
 
     res.json({
       success: true,

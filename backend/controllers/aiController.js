@@ -287,4 +287,237 @@ const analyzeContributions = async (req, res) => {
   }
 };
 
-module.exports = { generateSummary, generateSummaryAlias, getInsights, getLatestInsight, analyzeContributions };
+// @desc    Get risk prediction for a project (enhanced endpoint)
+// @route   GET /api/ai/risk/:projectId
+// @access  Private
+const getRiskPrediction = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ success: false, message: 'Project not found' });
+
+    const updates = await WeeklyUpdate.find({ project: projectId })
+      .populate('student', 'name email')
+      .populate('team', 'name')
+      .sort({ weekNumber: -1 });
+
+    const weekNumber = updates.length > 0 ? updates[0].weekNumber : 1;
+    const { riskLevel, riskFactors, recommendations } = assessRisk(updates, project, weekNumber);
+
+    const teams = await Team.find({ project: projectId }).populate('members.user', 'name email');
+    const totalStudents = teams.reduce((acc, t) => acc + t.members.length, 0);
+
+    const activeStudentIds = new Set(
+      updates.filter(u => u.weekNumber >= weekNumber - 1).map(u => u.student?._id?.toString())
+    );
+    const allStudentIds = new Set(
+      teams.flatMap(t => t.members.map(m => m.user._id.toString()))
+    );
+    const inactiveCount = [...allStudentIds].filter(id => !activeStudentIds.has(id)).length;
+
+    const weekGroups = {};
+    updates.forEach(u => {
+      if (!weekGroups[u.weekNumber]) weekGroups[u.weekNumber] = 0;
+      weekGroups[u.weekNumber]++;
+    });
+    const recentWeeks = Object.keys(weekGroups).sort((a, b) => Number(b) - Number(a)).slice(0, 4);
+    const isDeclining = recentWeeks.length >= 2 &&
+      weekGroups[recentWeeks[0]] < weekGroups[recentWeeks[recentWeeks.length - 1]];
+
+    const signals = {
+      totalStudents,
+      activeStudentsThisWeek: activeStudentIds.size,
+      inactiveMembers: inactiveCount,
+      participationRate: totalStudents > 0 ? (activeStudentIds.size / totalStudents) * 100 : 0,
+      avgHoursThisWeek: updates.filter(u => u.weekNumber === weekNumber)
+        .reduce((sum, u) => sum + (u.hoursWorked || 0), 0) / Math.max(1, updates.filter(u => u.weekNumber === weekNumber).length),
+      isParticipationDeclining: isDeclining,
+      weekNumber,
+    };
+
+    res.json({
+      success: true,
+      projectId,
+      riskLevel,
+      riskFactors,
+      recommendations,
+      signals,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Academic integrity analysis - detect suspicious patterns
+// @route   GET /api/ai/integrity/:projectId
+// @access  Private (Professor)
+const analyzeIntegrity = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ success: false, message: 'Project not found' });
+
+    const updates = await WeeklyUpdate.find({ project: projectId })
+      .populate('student', 'name email')
+      .populate('team', 'name')
+      .sort({ weekNumber: 1, createdAt: 1 });
+
+    const teams = await Team.find({ project: projectId }).populate('members.user', 'name email');
+    const totalStudents = teams.reduce((acc, t) => acc + t.members.length, 0);
+
+    const flags = [];
+    const studentStats = {};
+
+    updates.forEach(u => {
+      const sid = u.student?._id?.toString();
+      if (!sid) return;
+      if (!studentStats[sid]) {
+        studentStats[sid] = {
+          name: u.student.name,
+          updates: [],
+          contributions: [],
+          hours: [],
+          weekNumbers: [],
+        };
+      }
+      studentStats[sid].updates.push(u);
+      studentStats[sid].contributions.push(u.contributionPercentage || 0);
+      studentStats[sid].hours.push(u.hoursWorked || 0);
+      studentStats[sid].weekNumbers.push(u.weekNumber);
+    });
+
+    // Flag 1: Identical/near-identical update text
+    const updatesByWeek = {};
+    updates.forEach(u => {
+      if (!updatesByWeek[u.weekNumber]) updatesByWeek[u.weekNumber] = [];
+      updatesByWeek[u.weekNumber].push(u);
+    });
+
+    Object.entries(updatesByWeek).forEach(([week, weekUpdates]) => {
+      const contributions = weekUpdates
+        .map(u => u.individualContribution?.toLowerCase().trim())
+        .filter(Boolean);
+
+      for (let i = 0; i < contributions.length; i++) {
+        for (let j = i + 1; j < contributions.length; j++) {
+          const similarity = stringSimilarity(contributions[i], contributions[j]);
+          if (similarity > 0.85) {
+            flags.push({
+              type: 'identical_updates',
+              severity: 'high',
+              week: Number(week),
+              description: `Week ${week}: Two students submitted very similar update descriptions (${(similarity * 100).toFixed(0)}% similar)`,
+              students: [weekUpdates[i].student?.name, weekUpdates[j].student?.name],
+            });
+          }
+        }
+      }
+    });
+
+    // Flag 2: Contribution imbalance / last-minute spikes
+    const allStudentIds = new Set(
+      teams.flatMap(t => t.members.map(m => m.user._id.toString()))
+    );
+    const weekNumbers = updates.map(u => u.weekNumber);
+    const totalWeeks = weekNumbers.length > 0 ? Math.max(...weekNumbers) : 0;
+
+    Object.entries(studentStats).forEach(([sid, stat]) => {
+      const avgContrib = stat.contributions.reduce((a, b) => a + b, 0) / Math.max(1, stat.contributions.length);
+      const avgHours = stat.hours.reduce((a, b) => a + b, 0) / Math.max(1, stat.hours.length);
+
+      if (avgContrib < 10 && stat.updates.length > 2) {
+        flags.push({
+          type: 'contribution_imbalance',
+          severity: 'medium',
+          description: `${stat.name} has an average contribution of only ${avgContrib.toFixed(1)}% across ${stat.updates.length} submissions`,
+          student: stat.name,
+        });
+      }
+
+      if (totalWeeks >= 4) {
+        const earlyWeekHours = stat.hours.slice(0, -2).reduce((a, b) => a + b, 0) / Math.max(1, stat.hours.slice(0, -2).length);
+        const lastWeekHours = stat.hours.slice(-2).reduce((a, b) => a + b, 0) / 2;
+        if (earlyWeekHours < 3 && lastWeekHours > earlyWeekHours * 3 && lastWeekHours > 10) {
+          flags.push({
+            type: 'last_minute_spike',
+            severity: 'medium',
+            description: `${stat.name} shows a last-minute activity spike: avg ${earlyWeekHours.toFixed(1)}h/week early on, then ${lastWeekHours.toFixed(1)}h/week recently`,
+            student: stat.name,
+          });
+        }
+      }
+    });
+
+    // Flag 3: Inactive members
+    allStudentIds.forEach(sid => {
+      if (studentStats[sid]) {
+        const submittedWeeks = studentStats[sid].weekNumbers.length;
+        if (totalWeeks >= 3 && submittedWeeks < totalWeeks * 0.5) {
+          flags.push({
+            type: 'inactive_member',
+            severity: 'high',
+            description: `${studentStats[sid].name} only submitted ${submittedWeeks}/${totalWeeks} weekly updates`,
+            student: studentStats[sid].name,
+          });
+        }
+      } else if (totalWeeks >= 2) {
+        const teamMember = teams.flatMap(t => t.members).find(m => m.user._id.toString() === sid);
+        if (teamMember) {
+          flags.push({
+            type: 'no_updates',
+            severity: 'critical',
+            description: `${teamMember.user.name} has submitted 0 weekly updates across ${totalWeeks} weeks`,
+            student: teamMember.user.name,
+          });
+        }
+      }
+    });
+
+    const criticalFlags = flags.filter(f => f.severity === 'critical').length;
+    const highFlags = flags.filter(f => f.severity === 'high').length;
+    const mediumFlags = flags.filter(f => f.severity === 'medium').length;
+
+    let integrityScore = 100 - (criticalFlags * 25 + highFlags * 15 + mediumFlags * 8);
+    integrityScore = Math.max(0, integrityScore);
+
+    let integrityLevel;
+    if (integrityScore >= 85) integrityLevel = 'clean';
+    else if (integrityScore >= 65) integrityLevel = 'minor_concerns';
+    else if (integrityScore >= 40) integrityLevel = 'suspicious';
+    else integrityLevel = 'high_risk';
+
+    res.json({
+      success: true,
+      projectId,
+      integrityScore,
+      integrityLevel,
+      flags,
+      summary: flags.length === 0
+        ? 'No suspicious patterns detected. All contributions appear authentic.'
+        : `Detected ${flags.length} integrity flag(s) requiring review.`,
+      stats: {
+        totalStudents,
+        totalUpdates: updates.length,
+        totalWeeks,
+        flagCounts: { critical: criticalFlags, high: highFlags, medium: mediumFlags },
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Simple string similarity (Jaccard on words).
+ */
+const stringSimilarity = (a, b) => {
+  if (!a || !b) return 0;
+  const setA = new Set(a.split(/\s+/));
+  const setB = new Set(b.split(/\s+/));
+  const intersection = new Set([...setA].filter(x => setB.has(x)));
+  const union = new Set([...setA, ...setB]);
+  return union.size === 0 ? 0 : intersection.size / union.size;
+};
+
+module.exports = { generateSummary, generateSummaryAlias, getInsights, getLatestInsight, analyzeContributions, getRiskPrediction, analyzeIntegrity };

@@ -6,6 +6,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/common/Navbar';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
+// Landing page
+import LandingPage from './pages/LandingPage';
+
 // Auth pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -14,6 +17,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ProfessorDashboard from './pages/professor/ProfessorDashboard';
 import CreateProjectPage from './pages/professor/CreateProjectPage';
 import ProjectDetailPage from './pages/professor/ProjectDetailPage';
+import ProjectAnalyticsPage from './pages/professor/ProjectAnalyticsPage';
 
 // Student pages
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -93,11 +97,18 @@ const AppRoutes = () => {
       } />
       <Route path="/student/projects" element={<Navigate to="/student/dashboard" replace />} />
 
-      {/* Default redirect */}
+      {/* Professor analytics route */}
+      <Route path="/professor/projects/:id/analytics" element={
+        <PrivateRoute allowedRoles={['professor']}>
+          <Layout><ProjectAnalyticsPage /></Layout>
+        </PrivateRoute>
+      } />
+
+      {/* Default: landing page for guests, dashboard for authenticated users */}
       <Route path="/" element={
         user
           ? <Navigate to={user.role === 'professor' ? '/professor/dashboard' : '/student/dashboard'} replace />
-          : <Navigate to="/login" replace />
+          : <LandingPage />
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

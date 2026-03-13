@@ -67,11 +67,10 @@ const ProjectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-ProjectSchema.pre('save', function (next) {
+ProjectSchema.pre('save', function () {
   if (!this.inviteCode) {
     this.inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   }
-  next();
 });
 
 module.exports = mongoose.model('Project', ProjectSchema);

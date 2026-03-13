@@ -42,11 +42,10 @@ const TeamSchema = new mongoose.Schema(
 );
 
 // Generate invite token pre-save
-TeamSchema.pre('save', function (next) {
+TeamSchema.pre('save', function () {
   if (!this.inviteToken) {
     this.inviteToken = crypto.randomBytes(5).toString('hex').toUpperCase();
   }
-  next();
 });
 
 module.exports = mongoose.model('Team', TeamSchema);

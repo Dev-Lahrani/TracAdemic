@@ -107,18 +107,32 @@ const editUpdate = async (req, res) => {
 // @access  Private
 const getProjectUpdates = async (req, res) => {
   try {
-    const { weekNumber, teamId } = req.query;
+    const { weekNumber, teamId, page, limit } = req.query;
     const query = { project: req.params.projectId };
 
     if (weekNumber) query.weekNumber = parseInt(weekNumber);
     if (teamId) query.team = teamId;
 
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 20));
+    const skip = (pageNum - 1) * limitNum;
+
+    const total = await WeeklyUpdate.countDocuments(query);
     const updates = await WeeklyUpdate.find(query)
       .populate('student', 'name email department')
       .populate('team', 'name')
-      .sort({ weekNumber: -1, createdAt: -1 });
+      .sort({ weekNumber: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
 
-    res.json({ success: true, updates, count: updates.length });
+    res.json({
+      success: true,
+      updates,
+      count: updates.length,
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

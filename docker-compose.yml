@@ -30,11 +30,20 @@ services:
       - JWT_EXPIRE=7d
       - AI_SERVICE_URL=http://ai-service:8000
       - NODE_ENV=production
-      - CLIENT_URL=http://localhost:5173
+      - CLIENT_URL=http://localhost
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
     depends_on:
       mongodb:
         condition: service_healthy
+      ai-service:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   ai-service:
     build:
@@ -48,6 +57,12 @@ services:
       - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-mistral}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   frontend:
     build:
@@ -57,7 +72,8 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

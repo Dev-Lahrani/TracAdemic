@@ -65,10 +65,14 @@ ProjectPulse provides:
 - AI summary generation per week/team
 - Risk level indicators (Low → Critical)
 - Recommendation engine
+- **Project Analytics page** with contribution charts, weekly trends, and member stat cards
+- **Academic Integrity Analysis** to flag suspicious patterns
 
-### 🤖 AI Features
+### 🤖 AI & Advanced Features *(New)*
 - Weekly progress summarisation
-- Risk assessment (blockers, mood, milestone deadlines)
+- **Risk Prediction Engine** — real-time project risk scores with participation and trend signals
+- **GitHub Contribution Verification** — cross-reference GitHub commits/PRs/reviews with self-reported hours to generate an authenticity score
+- **Academic Integrity Detector** — Jaccard similarity detection for identical submissions, contribution imbalance, last-minute spikes, and inactive members
 - Contribution pattern analysis
 - Automated recommendations for professors
 - Supports local LLM backends (Ollama, llama.cpp) with rule-based fallback
@@ -97,14 +101,18 @@ ProjectPulse provides:
                        │ HTTPS/HTTP
 ┌──────────────────────▼──────────────────────────────────────┐
 │                   Express API (port 5000)                    │
-│  /api/auth  /api/projects  /api/updates  /api/teams         │
-│  /api/ai                                                     │
-└──────┬───────────────────────────────────┬──────────────────┘
-       │ Mongoose                          │ HTTP (axios)
-┌──────▼──────┐                 ┌──────────▼────────────────┐
+│  /api/auth  /api/projects  /api/updates  /api/teams          │
+│  /api/ai    /api/github                                      │
+└──────┬──────────────────────────────────┬───────────────────┘
+       │ Mongoose                         │ HTTP (axios)
+┌──────▼──────┐                 ┌─────────▼─────────────────┐
 │  MongoDB    │                 │  AI Service (port 8000)   │
 │  (port 27017)│                 │  FastAPI + LLM pipeline   │
 └─────────────┘                 └───────────────────────────┘
+                                         │ GitHub API
+                                ┌────────▼───────────┐
+                                │  api.github.com    │
+                                └────────────────────┘
 ```
 
 ### Data flow: AI summary generation
@@ -149,6 +157,7 @@ cd TracAdemic
 # Copy and edit environment variables
 cp backend/.env.example backend/.env
 # Edit backend/.env and set a strong JWT_SECRET
+# Optionally add GITHUB_TOKEN for higher GitHub API rate limits
 
 # Start everything
 docker compose up --build
@@ -220,12 +229,12 @@ The service then runs a separate risk assessment (rule-based) to determine risk 
 
 ### Authentication
 
-| Method | Endpoint              | Description          |
-|--------|-----------------------|----------------------|
-| POST   | `/api/auth/register`  | Create account       |
-| POST   | `/api/auth/login`     | Obtain JWT token     |
-| GET    | `/api/auth/me`        | Get current profile  |
-| PUT    | `/api/auth/me`        | Update profile       |
+| Method | Endpoint              | Description          | Access |
+|--------|-----------------------|----------------------|--------|
+| POST   | `/api/auth/register`  | Create account       | Public |
+| POST   | `/api/auth/login`     | Obtain JWT token     | Public |
+| GET    | `/api/auth/me`        | Get current profile  | Private |
+| PUT    | `/api/auth/me`        | Update profile       | Private |
 
 ### Projects
 
@@ -240,6 +249,8 @@ The service then runs a separate risk assessment (rule-based) to determine risk 
 | GET    | `/api/projects/:id/progress`   | Both       |
 
 ### Weekly Updates
+
+Supports pagination via `?page=1&limit=20` query params.
 
 | Method | Endpoint                          | Access    |
 |--------|-----------------------------------|-----------|
@@ -256,14 +267,79 @@ The service then runs a separate risk assessment (rule-based) to determine risk 
 | GET    | `/api/teams/project/:projectId`  | Both   |
 | GET    | `/api/teams/:id`                 | Both   |
 | GET    | `/api/teams/:id/analytics`       | Both   |
+| POST   | `/api/teams`                     | Professor |
+| POST   | `/api/teams/:id/invite`          | Leader/Professor |
+| DELETE | `/api/teams/:id/members/:userId` | Leader/Professor |
+| PUT    | `/api/teams/:id/leader`          | Professor |
 
 ### AI Insights
 
-| Method | Endpoint                            | Access    |
-|--------|-------------------------------------|-----------|
-| POST   | `/api/ai/summary`                   | Professor |
-| GET    | `/api/ai/insights/:projectId`       | Both      |
-| GET    | `/api/ai/insights/:projectId/latest`| Both      |
+| Method | Endpoint                                | Access    | Description |
+|--------|-----------------------------------------|-----------|-------------|
+| POST   | `/api/ai/summary`                       | Professor | Generate weekly AI summary |
+| POST   | `/api/ai/contribution-analysis`         | Professor | Analyze contribution balance |
+| GET    | `/api/ai/insights/:projectId`           | Both      | List all insights for project |
+| GET    | `/api/ai/insights/:projectId/latest`    | Both      | Get most recent insight |
+| GET    | `/api/ai/risk/:projectId`               | Both      | Get real-time risk prediction |
+| GET    | `/api/ai/integrity/:projectId`          | Professor | Academic integrity analysis |
+
+### GitHub Contribution Verification *(New)*
+
+| Method | Endpoint                               | Access  | Description |
+|--------|----------------------------------------|---------|-------------|
+| GET    | `/api/github/contribution/:studentId`  | Private | Analyze a student's GitHub activity and generate an authenticity score |
+
+**Query parameters:**
+- `username` – GitHub username (optional; if omitted, score is based on weekly updates only)
+- `projectId` – ObjectId of the project to cross-reference self-reported hours
+
+**Example response:**
+```json
+{
+  "success": true,
+  "studentId": "...",
+  "studentName": "Alice",
+  "githubUsername": "alice-dev",
+  "githubData": {
+    "profile": { "login": "alice-dev", "name": "Alice", "publicRepos": 12 },
+    "metrics": { "totalCommits": 34, "pullRequests": 5, "reviewActivity": 3 },
+    "weeklyActivity": [{ "week": 1, "commits": 3, "prs": 1, "reviews": 0 }]
+  },
+  "authenticityScore": { "score": 82, "grade": "high", "factors": ["Strong commit activity..."] },
+  "analysisNote": "Score calculated combining GitHub activity and self-reported updates"
+}
+```
+
+**Note:** For unauthenticated GitHub API requests, rate limits apply (60 req/hr). Set `GITHUB_TOKEN` in your backend environment to increase limits to 5,000 req/hr.
+
+---
+
+## Advanced AI Features
+
+### Risk Prediction Engine (`GET /api/ai/risk/:projectId`)
+
+Returns a real-time risk assessment combining:
+- Weekly update submission rates
+- Unresolved blocker counts
+- Team member mood signals
+- Milestone proximity analysis
+- Participation trend (declining/stable/growing)
+
+**Risk Levels:** `low` → `medium` → `high` → `critical`
+
+### Academic Integrity Detector (`GET /api/ai/integrity/:projectId`)
+
+Detects suspicious patterns in student submissions:
+
+| Flag Type | Severity | Detection Method |
+|-----------|----------|-----------------|
+| `identical_updates` | High | Jaccard word-set similarity > 85% between two submissions in the same week |
+| `contribution_imbalance` | Medium | Student average contribution < 10% across 3+ submissions |
+| `last_minute_spike` | Medium | Student averaged < 3h/week early on, then > 3× spike in final weeks |
+| `inactive_member` | High | Submitted < 50% of weekly updates over a 3+ week project |
+| `no_updates` | Critical | Team member submitted 0 updates in a 2+ week project |
+
+**Integrity Score:** 0–100 (`clean` ≥ 85, `minor_concerns` ≥ 65, `suspicious` ≥ 40, `high_risk` < 40)
 
 ---
 
@@ -365,16 +441,13 @@ The service then runs a separate risk assessment (rule-based) to determine risk 
 
 ## Future Features
 
-1. **GitHub Integration** – Auto-detect commits per student; correlate with weekly updates
-2. **Automated Contribution Detection** – Pull request & commit analytics for cross-validation
-3. **Milestone Forecasting** – Predict whether a team will meet upcoming milestones
-4. **Project Grading Assistant** – AI-suggested grade bands based on contribution history
-5. **Peer Evaluation System** – Anonymous inter-team member rating at project end
-6. **Email/Slack Notifications** – Remind students to submit weekly updates
-7. **Export to PDF** – Downloadable project report for grading archives
-8. **Custom Rubrics** – Professor-defined evaluation criteria linked to updates
-9. **Multi-project Dashboard** – Cross-project analytics for department heads
-10. **Mobile App** – React Native companion for quick mobile updates
+1. **Email/Slack Notifications** – Remind students to submit weekly updates
+2. **Export to PDF** – Downloadable project report for grading archives
+3. **Custom Rubrics** – Professor-defined evaluation criteria linked to updates
+4. **Multi-project Dashboard** – Cross-project analytics for department heads
+5. **Mobile App** – React Native companion for quick mobile updates
+6. **Project Grading Assistant** – AI-suggested grade bands based on contribution history
+7. **Milestone Forecasting** – Predict whether a team will meet upcoming milestones
 
 ---
 

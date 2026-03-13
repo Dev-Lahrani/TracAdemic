@@ -62,8 +62,11 @@ const analyzeGitHubContribution = async (req, res) => {
       const issueEvents = recentEvents.filter(e => e.type === 'IssuesEvent');
 
       const totalCommits = pushEvents.reduce((sum, e) => sum + (e.payload?.commits?.length || 0), 0);
+      // GitHub's public events API does not expose per-commit line diffs, so we use a rough
+      // heuristic: LINES_PER_COMMIT_ESTIMATE lines changed per commit as a conservative average.
+      const LINES_PER_COMMIT_ESTIMATE = 25;
       const linesChanged = pushEvents.reduce((sum, e) => {
-        return sum + (e.payload?.commits?.length || 0) * 25; // Estimate 25 lines per commit
+        return sum + (e.payload?.commits?.length || 0) * LINES_PER_COMMIT_ESTIMATE;
       }, 0);
 
       const activityByRepo = {};

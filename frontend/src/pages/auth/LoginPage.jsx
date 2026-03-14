@@ -26,19 +26,19 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-md animate-scale-in">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4 shadow-lg">
             <Zap className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">ProjectPulse</h1>
-          <p className="text-gray-500 mt-1">AI-Assisted Academic Project Management</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">ProjectPulse</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">AI-Assisted Academic Project Management</p>
         </div>
 
         <div className="card shadow-xl">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign in to your account</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Sign in to your account</h2>
 
           <ErrorMessage message={error} />
 
@@ -81,8 +81,8 @@ const LoginPage = () => {
         </div>
 
         {/* Demo credentials hint */}
-        <div className="mt-4 p-4 bg-white/70 rounded-lg border border-gray-200 text-xs text-gray-500">
-          <p className="font-medium text-gray-700 mb-1">Demo accounts</p>
+        <div className="mt-4 p-4 bg-white/70 dark:bg-gray-800/70 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+          <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">Demo accounts</p>
           <p>Professor: professor@demo.com / demo1234</p>
           <p>Student: student@demo.com / demo1234</p>
         </div>

@@ -6,12 +6,12 @@ import AIInsightPanel from '../../components/ai/AIInsightPanel';
 import StatCard from '../../components/common/StatCard';
 import { formatDate, getCurrentWeek, getWeeksBetween, moodEmoji } from '../../utils/helpers';
 import {
-  Users, FileText, TrendingUp, AlertTriangle, ChevronDown,
+  Users, FileText, TrendingUp, AlertTriangle,
   RefreshCw, Calendar, CheckCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 
 const ProjectDetailPage = () => {

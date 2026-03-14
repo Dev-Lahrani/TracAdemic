@@ -17,7 +17,7 @@ const AIInsightPanel = ({ insight }) => {
       <div className="card text-center text-gray-400 py-12">
         <TrendingUp className="w-10 h-10 mx-auto mb-3 opacity-40" />
         <p className="font-medium text-gray-500">No AI insights yet</p>
-        <p className="text-sm mt-1">Generate a summary from the week's updates.</p>
+        <p className="text-sm mt-1">Generate a summary from the week&apos;s updates.</p>
       </div>
     );
   }

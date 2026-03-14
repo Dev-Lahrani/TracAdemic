@@ -1,52 +1,63 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Brain, BarChart3, GitBranch, CheckCircle2, ArrowRight, Sparkles, Shield, Users, BookOpen, TrendingUp } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { Brain, BarChart3, GitBranch, ArrowRight, Sparkles, Shield, Users, BookOpen, TrendingUp, Sun, Moon } from 'lucide-react';
 
 const LandingPage = () => {
+  const { theme, toggleTheme } = useTheme();
+  
   const features = [
     {
       icon: Brain,
       title: 'AI-Powered Insights',
       description: 'Get automated weekly summaries, risk predictions, and contribution analysis powered by AI.',
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
+      color: 'text-purple-600 dark:text-purple-400',
+      bg: 'bg-purple-50 dark:bg-purple-900/30',
     },
     {
       icon: GitBranch,
       title: 'GitHub Integration',
       description: 'Automatically verify contributions by analyzing commits, pull requests, and code reviews.',
-      color: 'text-green-600',
-      bg: 'bg-green-50',
+      color: 'text-green-600 dark:text-green-400',
+      bg: 'bg-green-50 dark:bg-green-900/30',
     },
     {
       icon: BarChart3,
       title: 'Team Analytics',
       description: 'Visualize team productivity, contribution heatmaps, and weekly progress trends.',
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      color: 'text-blue-600 dark:text-blue-400',
+      bg: 'bg-blue-50 dark:bg-blue-900/30',
     },
     {
       icon: Shield,
       title: 'Academic Integrity',
       description: 'Detect suspicious patterns, contribution imbalances, and last-minute activity spikes.',
-      color: 'text-red-600',
-      bg: 'bg-red-50',
+      color: 'text-red-600 dark:text-red-400',
+      bg: 'bg-red-50 dark:bg-red-900/30',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Nav */}
-      <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 z-50">
+      <nav className="fixed top-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">ProjectPulse</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">ProjectPulse</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <Link to="/login" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               Sign In
             </Link>
             <Link to="/register" className="btn-primary flex items-center gap-2">
@@ -80,24 +91,24 @@ const LandingPage = () => {
             </Link>
           </div>
         </div>
-        <div className="h-16 bg-gradient-to-b from-transparent to-gray-50" />
+        <div className="h-16 bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900" />
       </section>
 
       {/* Features */}
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 dark:bg-gray-800 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Everything you need to succeed</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">A complete platform for managing academic projects from start to finish.</p>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Everything you need to succeed</h2>
+            <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">A complete platform for managing academic projects from start to finish.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, i) => (
-              <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+              <div key={i} className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 hover:shadow-md hover:scale-105 transition-all duration-300">
                 <div className={`w-12 h-12 ${feature.bg} rounded-xl flex items-center justify-center mb-4`}>
                   <feature.icon className={`w-6 h-6 ${feature.color}`} />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{feature.description}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-300 leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -105,7 +116,7 @@ const LandingPage = () => {
       </section>
 
       {/* Stats */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
             {[
@@ -115,8 +126,8 @@ const LandingPage = () => {
             ].map((stat, i) => (
               <div key={i} className="p-6">
                 <stat.icon className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-                <div className="text-4xl font-extrabold text-gray-900 mb-1">{stat.value}</div>
-                <div className="text-gray-500">{stat.label}</div>
+                <div className="text-4xl font-extrabold text-gray-900 dark:text-white mb-1">{stat.value}</div>
+                <div className="text-gray-500 dark:text-gray-400">{stat.label}</div>
               </div>
             ))}
           </div>

@@ -27,8 +27,7 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      const { confirmPassword, ...submitData } = form;
-      const user = await register(submitData);
+      const user = await register(form);
       navigate(user.role === 'professor' ? '/professor/dashboard' : '/student/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -38,19 +37,19 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-md animate-scale-in">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4 shadow-lg">
             <Zap className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">ProjectPulse</h1>
-          <p className="text-gray-500 mt-1">Create your account</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">ProjectPulse</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Create your account</p>
         </div>
 
         <div className="card shadow-xl">
           {/* Role toggle */}
-          <div className="flex rounded-lg border border-gray-200 p-1 mb-6">
+          <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 p-1 mb-6">
             {[
               { value: 'student', label: 'Student', icon: GraduationCap },
               { value: 'professor', label: 'Professor', icon: BookOpen },
@@ -62,7 +61,7 @@ const RegisterPage = () => {
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-colors ${
                   form.role === value
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
                 <Icon className="w-4 h-4" />

@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import {
-  LayoutDashboard, BookOpen, FileText, LogOut, User,
-  ChevronRight, Zap, Sun, Moon,
+  LayoutDashboard, BookOpen, LogOut, User,
+  ChevronRight, Zap, Sun, Moon, Menu, X,
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -12,6 +12,7 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -42,9 +43,9 @@ const Navbar = () => {
             <span className="font-bold text-lg text-gray-900 dark:text-white">ProjectPulse</span>
           </Link>
 
-          {/* Navigation links */}
+          {/* Desktop Navigation */}
           {user && (
-            <div className="hidden sm:flex items-center gap-1">
+            <div className="hidden md:flex items-center gap-1">
               {links.map(({ to, label, icon: Icon }) => {
                 const active = location.pathname.startsWith(to);
                 return (
@@ -80,7 +81,7 @@ const Navbar = () => {
             {/* User menu */}
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <div className="hidden md:flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                   <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                     <User className="w-4 h-4 text-blue-600 dark:text-blue-300" />
                   </div>
@@ -100,11 +101,65 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <Link to="/login" className="btn-secondary text-sm">Sign in</Link>
-                <Link to="/register" className="btn-primary text-sm">Get started</Link>
+                <Link to="/register" className="btn-primary text-sm hidden sm:inline-flex">Get started</Link>
               </div>
+            )}
+
+            {/* Mobile menu button */}
+            {user && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             )}
           </div>
         </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && user && (
+          <div className="md:hidden border-t border-gray-100 dark:border-gray-700 py-3 animate-fade-in">
+            <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-100 dark:border-gray-700">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <User className="w-5 h-5 text-blue-600 dark:text-blue-300" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">{user.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user.role}</p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              {links.map(({ to, label, icon: Icon }) => {
+                const active = location.pathname.startsWith(to);
+                return (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      active
+                        ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                    <ChevronRight className="w-4 h-4 ml-auto" />
+                  </Link>
+                );
+              })}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign out
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

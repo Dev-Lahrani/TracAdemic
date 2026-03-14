@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
 import StatCard from '../../components/common/StatCard';
+import { DashboardSkeleton } from '../../components/common/Skeleton';
 import { BookOpen, Users, FileText, Plus, TrendingUp, AlertTriangle, BarChart3 } from 'lucide-react';
-import { formatDate } from '../../utils/helpers';
 
 const ProfessorDashboard = () => {
   const { user } = useAuth();
@@ -25,8 +24,22 @@ const ProfessorDashboard = () => {
   const totalUpdates = projects.reduce((sum, p) => sum + (p.updateCount || 0), 0);
   const activeProjects = projects.filter((p) => p.status === 'active').length;
 
-  if (loading) return <LoadingSpinner text="Loading dashboard…" />;
-  if (error) return <div className="card text-center py-12 text-red-600">{error}</div>;
+  if (loading) return <DashboardSkeleton />;
+  if (error) return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="card text-center py-12">
+        <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Failed to load projects</h3>
+        <p className="text-gray-500 dark:text-gray-400 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="btn-primary"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -36,7 +49,7 @@ const ProfessorDashboard = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             Welcome back, {user?.name?.split(' ')[0]} 👋
           </h1>
-          <p className="text-gray-500 mt-1">Here's an overview of your projects</p>
+          <p className="text-gray-500 mt-1">Here&apos;s an overview of your projects</p>
         </div>
         <Link to="/professor/projects/new" className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" />

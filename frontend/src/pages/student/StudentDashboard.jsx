@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
 import StatCard from '../../components/common/StatCard';
-import { BookOpen, FileText, Plus, Clock, CheckSquare } from 'lucide-react';
-import { formatDate, getCurrentWeek } from '../../utils/helpers';
+import { DashboardSkeleton } from '../../components/common/Skeleton';
+import { BookOpen, FileText, Plus, Clock, CheckSquare, AlertTriangle } from 'lucide-react';
+import { getCurrentWeek } from '../../utils/helpers';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -21,8 +21,22 @@ const StudentDashboard = () => {
     }).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <LoadingSpinner text="Loading your projects…" />;
-  if (error) return <div className="card text-center py-12 text-red-600">{error}</div>;
+  if (loading) return <DashboardSkeleton />;
+  if (error) return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="card text-center py-12">
+        <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Failed to load projects</h3>
+        <p className="text-gray-500 dark:text-gray-400 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="btn-primary"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

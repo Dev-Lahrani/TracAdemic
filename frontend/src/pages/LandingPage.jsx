@@ -46,7 +46,7 @@ const LandingPage = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">ProjectPulse</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">trackAcademic</span>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -79,7 +79,7 @@ const LandingPage = () => {
             <span className="text-yellow-300">Succeed.</span>
           </h1>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-10">
-            ProjectPulse helps professors and students manage academic projects with AI-powered insights,
+            trackAcademic helps professors and students manage academic projects with AI-powered insights,
             real-time analytics, and GitHub contribution verification.
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
@@ -138,7 +138,7 @@ const LandingPage = () => {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-700 text-white text-center">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-3xl font-bold mb-4">Ready to transform your classroom?</h2>
-          <p className="text-blue-100 mb-8">Join thousands of professors and students using ProjectPulse.</p>
+          <p className="text-blue-100 mb-8">Join thousands of professors and students using trackAcademic.</p>
           <Link to="/register" className="bg-white text-blue-700 px-8 py-3 rounded-xl font-semibold hover:bg-blue-50 inline-flex items-center gap-2 shadow-lg">
             Get Started Free <ArrowRight className="w-5 h-5" />
           </Link>
@@ -147,7 +147,7 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-8 text-center text-sm">
-        <p>© 2025 ProjectPulse. Built for academic excellence.</p>
+        <p>© 2025 trackAcademic. Built for academic excellence.</p>
       </footer>
     </div>
   );

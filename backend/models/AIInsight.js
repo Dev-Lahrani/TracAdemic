@@ -47,7 +47,7 @@ const AIInsightSchema = new mongoose.Schema(
     },
     model: {
       type: String,
-      default: 'projectpulse-analyzer',
+      default: 'trackacademic-analyzer',
     },
   },
   { timestamps: true }

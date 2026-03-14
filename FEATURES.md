@@ -1,4 +1,4 @@
-# ProjectPulse – What We Built
+# trackAcademic – What We Built
 
 ## Core Platform Features
 - [x] User authentication (JWT, roles)

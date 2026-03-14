@@ -77,7 +77,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'ProjectPulse API' });
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'trackAcademic API' });
 });
 
 // API Routes
@@ -113,7 +113,7 @@ const PORT = process.env.PORT || 5000;
 if (require.main === module) {
   connectDB().then(() => {
     app.listen(PORT, () => {
-      console.log(`🚀 ProjectPulse API running on port ${PORT}`);
+      console.log(`🚀 trackAcademic API running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   });

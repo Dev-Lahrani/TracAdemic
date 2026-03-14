@@ -1,6 +1,6 @@
-# ProjectPulse – AI-Assisted Academic Project Management Platform
+# trackAcademic – AI-Assisted Academic Project Management Platform
 
-ProjectPulse helps university professors track student group projects through **structured weekly progress updates**, **AI-generated summaries**, and **contribution analytics**.
+trackAcademic helps university professors track student group projects through **structured weekly progress updates**, **AI-generated summaries**, and **contribution analytics**.
 
 ---
 
@@ -30,7 +30,7 @@ University professors struggle to track group project progress:
 
 ### The Solution
 
-ProjectPulse provides:
+trackAcademic provides:
 
 - **Students** submit structured weekly updates (completed tasks, blockers, contribution %)
 - **Professors** get a unified dashboard with team activity, analytics, and AI-generated summaries

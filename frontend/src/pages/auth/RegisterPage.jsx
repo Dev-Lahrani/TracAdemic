@@ -43,7 +43,7 @@ const RegisterPage = () => {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl mb-4 shadow-lg">
             <Zap className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">ProjectPulse</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">trackAcademic</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Create your account</p>
         </div>
 

@@ -5,8 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { 
   Briefcase, Plus, Building, MapPin, Users, Clock, CheckCircle, 
-  XCircle, ExternalLink, Search, Filter, DollarSign, Calendar,
-  ChevronRight, Star, Send, UserGroup
+  XCircle, ExternalLink, Search, Filter, DollarSign,
+  ChevronRight, Star, Send
 } from 'lucide-react';
 import { formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';

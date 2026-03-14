@@ -14,7 +14,6 @@ ProjectPulse helps university professors track student group projects through **
 6. [API Reference](#api-reference)
 7. [AI Pipeline](#ai-pipeline)
 8. [Database Schema](#database-schema)
-9. [Future Features](#future-features)
 
 ---
 
@@ -41,75 +40,75 @@ ProjectPulse provides:
 
 ## Features
 
-### Student Features
+### Core Features
+
+#### Student Features
 - Register and join projects via invite code
-- Submit structured weekly updates:
-  - Completed tasks with hours spent
-  - Planned tasks for next week
-  - Active blockers (with severity)
-  - Individual contribution summary
-  - Team mood indicator
+- Submit structured weekly updates with tasks, blockers, and mood
 - View project timeline and milestones
-- See team members' updates (anonymised contribution view)
-- Review AI-generated summaries for their project
+- See AI-generated insights and recommendations
 
-### Professor Features
+#### Professor Features
 - Create projects with milestones and invite codes
-- Invite code distribution (share code with students)
-- Project dashboard with:
-  - Team overview and member list
-  - Weekly update activity chart
-  - Submission rate tracking
-  - Blocker visibility
-- AI summary generation per week/team
-- Risk level indicators (Low → Critical)
-- Recommendation engine
-- Project Analytics page with contribution charts, weekly trends, and member stat cards
-- Academic Integrity Analysis to flag suspicious patterns
+- Team overview dashboard with activity tracking
+- AI summary generation and risk prediction
+- Academic integrity analysis
 
-### Document Management
-- Request specific documents from students (PDF, presentations, code, etc.)
+### Advanced Features
+
+#### Document Management
+- Request specific documents from students (PDF, presentations, code)
 - File upload with drag-and-drop
 - Document review workflow (pending/approved/rejected)
-- Due date tracking
 
-### Q&A System
-- Post questions about the project
-- Threaded replies from professors and teammates
+#### Q&A System
+- Post questions with threaded replies
 - Mark answers as accepted
 - Close resolved questions
 
-### Meeting Scheduler
+#### Meeting Scheduler
 - Schedule team meetings with date/time/duration
-- Video conferencing link integration (Zoom, Google Meet, etc.)
-- Location support for in-person meetings
-- Meeting status tracking (scheduled/completed/cancelled)
+- Video conferencing link integration
 
-### Evaluations & Grading
-- Create custom assessments with weighted criteria
+#### Evaluations & Grading
+- Create assessments with weighted criteria
 - Track evaluation due dates
-- AI-powered grade suggestions based on contribution history
 
-### Industry Projects
-- Post industry-sponsored projects for students
-- Student application system with team profiles
-- Application review workflow (pending/accepted/rejected)
+#### Industry Projects
+- Post industry-sponsored projects
+- Student application system
 
-### Peer Review System
-- Anonymous peer feedback for team members
-- Rating system (1-5 stars)
-- Structured feedback (strengths, improvements, comments)
-- Review history for both giving and receiving feedback
+#### Peer Review System
+- Anonymous peer feedback (1-5 star rating)
+- Structured feedback (strengths, improvements)
 
-### AI & Advanced Features
-- Weekly progress summarisation
-- **Risk Prediction Engine** — real-time project risk scores with participation and trend signals
-- **GitHub Contribution Verification** — cross-reference GitHub commits/PRs/reviews with self-reported hours
-- **Academic Integrity Detector** — Jaccard similarity detection, contribution imbalance, last-minute spikes
-- **Predictive Analytics** — ML-powered success probability forecasting
-- Contribution pattern analysis
-- Automated recommendations for professors
-- Supports local LLM backends (Ollama, llama.cpp) with rule-based fallback
+### 🤖 Mind-Blowing AI Features
+
+#### **AI Code Review Assistant**
+- Real-time code analysis with security vulnerability detection
+- Code quality scoring (0-100)
+- Cyclomatic complexity analysis
+- Smart suggestions for code improvements
+- Multi-language support (JavaScript, Python, Java, C++, C#, PHP)
+
+#### **Voice/Video Updates with AI Transcription**
+- Record audio/video updates directly in the browser
+- Upload files for AI transcription
+- Emotion analysis from spoken content
+- Speech sentiment detection (positive/negative/neutral)
+- Keyword extraction from transcripts
+
+#### **Smart Task Distribution AI**
+- AI-powered task assignment based on skills, workload, and availability
+- Skill matching algorithm for optimal task-person fit
+- Workload balancing to prevent burnout
+- Visual workload distribution dashboard
+- Smart recommendations for task rebalancing
+
+#### **Predictive Analytics**
+- Machine learning-powered success probability forecasting
+- Team risk analysis with trend indicators
+- Resource utilization tracking
 
 ---
 
@@ -122,42 +121,6 @@ ProjectPulse provides:
 | Database | MongoDB 7 (Mongoose ODM) |
 | AI Service | Python 3.12, FastAPI, Ollama/llama.cpp |
 | Containerisation | Docker, Docker Compose |
-
----
-
-## Architecture
-
-```
-Browser (React SPA) <-> Express API <-> MongoDB
-                              |
-                              v
-                    AI Service (FastAPI/Python)
-                              |
-                              v
-                        GitHub API
-```
-
-### Data flow: AI summary generation
-
-```
-Student submits update
-        ↓
-Backend stores update in MongoDB
-        ↓
-Professor triggers summary (POST /api/ai/summary)
-        ↓
-Backend fetches week's updates from MongoDB
-        ↓
-Calls AI Service POST /summarize
-        ↓
-AI Service: build prompt → call LLM (or rule-based fallback)
-        ↓
-AI Service returns summary + risk analysis
-        ↓
-Backend saves AIInsight document
-        ↓
-Frontend displays insight on Professor dashboard
-```
 
 ---
 
@@ -195,7 +158,6 @@ mongod --dbpath ./mongo-data
 **2. Backend**
 ```bash
 cd backend
-cp .env.example .env
 npm install
 npm run dev
 ```
@@ -220,12 +182,11 @@ npm run dev
 
 ### Authentication
 
-| Method | Endpoint | Description | Access |
-|--------|----------|-------------|--------|
-| POST | `/api/auth/register` | Create account | Public |
-| POST | `/api/auth/login` | Obtain JWT token | Public |
-| GET | `/api/auth/me` | Get current profile | Private |
-| PUT | `/api/auth/me` | Update profile | Private |
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| POST | `/api/auth/register` | Public |
+| POST | `/api/auth/login` | Public |
+| GET | `/api/auth/me` | Private |
 
 ### Projects
 
@@ -234,112 +195,54 @@ npm run dev
 | POST | `/api/projects` | Professor |
 | GET | `/api/projects` | Professor |
 | GET | `/api/projects/student` | Student |
-| POST | `/api/projects/join` | Student |
-| GET | `/api/projects/:id` | Both |
-| PUT | `/api/projects/:id` | Professor |
-| GET | `/api/projects/:id/progress` | Both |
 
-### Weekly Updates
+### AI Code Review
 
 | Method | Endpoint | Access |
 |--------|----------|--------|
-| POST | `/api/updates` | Student |
-| GET | `/api/updates/project/:projectId` | Both |
-| GET | `/api/updates/my/:projectId` | Student |
-| GET | `/api/updates/:id` | Both |
-| PUT | `/api/updates/:id` | Student |
+| POST | `/api/code-review/review` | Both |
+| POST | `/api/code-review/quality/:projectId` | Both |
+| POST | `/api/code-review/improvements/:projectId` | Both |
 
-### Teams
+### Voice Updates
 
 | Method | Endpoint | Access |
 |--------|----------|--------|
-| GET | `/api/teams/project/:projectId` | Both |
-| GET | `/api/teams/:id` | Both |
-| GET | `/api/teams/:id/analytics` | Both |
-| POST | `/api/teams` | Professor |
-| POST | `/api/teams/:id/invite` | Professor |
-| DELETE | `/api/teams/:id/members/:userId` | Professor |
-| PUT | `/api/teams/:id/leader` | Professor |
+| POST | `/api/voice-updates/upload` | Student |
+| GET | `/api/voice-updates/project/:projectId` | Both |
 
-### AI Insights
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/ai/summary` | Professor | Generate weekly AI summary |
-| POST | `/api/ai/contribution-analysis` | Professor | Analyze contribution balance |
-| GET | `/api/ai/insights/:projectId` | Both | List all insights |
-| GET | `/api/ai/insights/:projectId/latest` | Both | Get most recent insight |
-| GET | `/api/ai/risk/:projectId` | Both | Real-time risk prediction |
-| GET | `/api/ai/integrity/:projectId` | Professor | Academic integrity analysis |
-
-### Documents
+### Task Assignments
 
 | Method | Endpoint | Access |
 |--------|----------|--------|
-| POST | `/api/documents/requests` | Professor |
-| GET | `/api/documents/requests/project/:projectId` | Both |
-| POST | `/api/documents/upload` | Student |
-| GET | `/api/documents/project/:projectId` | Both |
-| PUT | `/api/documents/:id/review` | Professor |
-
-### Doubts & Meetings
-
-| Method | Endpoint | Access |
-|--------|----------|--------|
-| POST | `/api/doubts` | Student |
-| GET | `/api/doubts/project/:projectId` | Both |
-| POST | `/api/doubts/:id/reply` | Both |
-| PUT | `/api/doubts/:id/close` | Both |
-| POST | `/api/doubts/meetings` | Professor |
-| GET | `/api/doubts/meetings/project/:projectId` | Both |
-| PUT | `/api/doubts/meetings/:id` | Professor |
-
-### Evaluations
-
-| Method | Endpoint | Access |
-|--------|----------|--------|
-| POST | `/api/evaluations` | Professor |
-| GET | `/api/evaluations/project/:projectId` | Both |
-| GET | `/api/evaluations/suggest/:projectId/:studentId` | Professor |
-
-### Industry Projects
-
-| Method | Endpoint | Access |
-|--------|----------|--------|
-| POST | `/api/industry` | Professor |
-| GET | `/api/industry` | Both |
-| GET | `/api/industry/:id` | Both |
-| POST | `/api/industry/:id/apply` | Student |
-| PUT | `/api/industry/applications/:id/review` | Professor |
-| GET | `/api/industry/my-applications` | Student |
-
-### Peer Reviews
-
-| Method | Endpoint | Access |
-|--------|----------|--------|
-| POST | `/api/peer-reviews` | Student |
-| GET | `/api/peer-reviews/project/:projectId` | Both |
-| GET | `/api/peer-reviews/my-reviews/:projectId` | Student |
-
-### GitHub Integration
-
-| Method | Endpoint | Access |
-|--------|----------|--------|
-| GET | `/api/github/contribution/:studentId` | Private |
+| POST | `/api/assignments/suggest` | Both |
+| POST | `/api/assignments/workload` | Both |
 
 ---
 
 ## AI Pipeline
 
-The AI service is a standalone FastAPI microservice.
+### AI Code Review
 
-### Backends
+The code review assistant performs:
+1. **Security Analysis** - Detects SQL injection, XSS, eval() usage, ReDoS
+2. **Code Quality Check** - Line length, TODO comments, debug code
+3. **Complexity Analysis** - Cyclomatic complexity scoring
+4. **Smart Suggestions** - Refactoring recommendations
 
-| Backend | Description |
-|---------|-------------|
-| `mock` | Rule-based (default, no LLM needed) |
-| `ollama` | Ollama local LLM |
-| `llamacpp` | llama.cpp Python bindings |
+### Voice Transcription & Analysis
+
+1. **Audio Processing** - Browser-based recording or file upload
+2. **Transcription** - Convert audio to text
+3. **Emotion Detection** - Analyze sentiment from speech
+4. **Keyword Extraction** - Identify important terms
+
+### Smart Task Distribution
+
+1. **Skill Matching** - Match tasks to team members' skills
+2. **Workload Balancing** - Distribute tasks evenly
+3. **Performance Scoring** - Factor in historical performance
+4. **Predictive Analysis** - Estimate completion times
 
 ---
 
@@ -382,50 +285,6 @@ The AI service is a standalone FastAPI microservice.
   "members": [{ "user": "ObjectId → User", "role": "leader | member" }]
 }
 ```
-
-### WeeklyUpdates
-```json
-{
-  "_id": "ObjectId",
-  "project": "ObjectId → Project",
-  "team": "ObjectId → Team",
-  "student": "ObjectId → User",
-  "weekNumber": "number",
-  "completedTasks": [{ "title", "description", "hoursSpent" }],
-  "plannedTasks": [{ "title", "description" }],
-  "blockers": [{ "description", "severity", "resolved" }],
-  "individualContribution": "string",
-  "contributionPercentage": "number",
-  "mood": "great | good | okay | struggling",
-  "hoursWorked": "number"
-}
-```
-
-### AIInsights
-```json
-{
-  "_id": "ObjectId",
-  "project": "ObjectId → Project",
-  "team": "ObjectId → Team",
-  "weekNumber": "number",
-  "type": "weekly_summary | contribution_analysis | risk_alert",
-  "summary": "string",
-  "riskLevel": "low | medium | high | critical",
-  "riskFactors": ["string"],
-  "recommendations": ["string"]
-}
-```
-
----
-
-## Future Features
-
-1. Email/Slack Notifications
-2. Export to PDF
-3. Custom Rubrics
-4. Multi-project Dashboard for Department Heads
-5. Mobile App (React Native)
-6. Milestone Forecasting
 
 ---
 

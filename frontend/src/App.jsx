@@ -17,6 +17,14 @@ const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
 const JoinProjectPage = lazy(() => import('./pages/student/JoinProjectPage'));
 const SubmitUpdatePage = lazy(() => import('./pages/student/SubmitUpdatePage'));
 const StudentProjectDetailPage = lazy(() => import('./pages/student/StudentProjectDetailPage'));
+const DocumentsPage = lazy(() => import('./pages/shared/DocumentsPage'));
+const DoubtsPage = lazy(() => import('./pages/shared/DoubtsPage'));
+const MeetingsPage = lazy(() => import('./pages/shared/MeetingsPage'));
+const EvaluationsPage = lazy(() => import('./pages/shared/EvaluationsPage'));
+const IndustryProjectsPage = lazy(() => import('./pages/shared/IndustryProjectsPage'));
+const GamificationPage = lazy(() => import('./pages/shared/GamificationPage'));
+const PeerReviewPage = lazy(() => import('./pages/shared/PeerReviewPage'));
+const PredictiveAnalyticsPage = lazy(() => import('./pages/shared/PredictiveAnalyticsPage'));
 
 /** Protected route – redirects to /login if unauthenticated */
 const PrivateRoute = ({ children, allowedRoles }) => {
@@ -101,6 +109,56 @@ const AppRoutes = () => {
         <Route path="/professor/projects/:id/analytics" element={
           <PrivateRoute allowedRoles={['professor']}>
             <Layout><ProjectAnalyticsPage /></Layout>
+          </PrivateRoute>
+        } />
+
+        {/* Shared routes - Documents, Doubts, Meetings, Evaluations, Industry Projects */}
+        <Route path="/projects/:projectId/documents" element={
+          <PrivateRoute allowedRoles={['professor', 'student']}>
+            <Layout><DocumentsPage /></Layout>
+          </PrivateRoute>
+        } />
+        <Route path="/projects/:projectId/doubts" element={
+          <PrivateRoute allowedRoles={['professor', 'student']}>
+            <Layout><DoubtsPage /></Layout>
+          </PrivateRoute>
+        } />
+        <Route path="/projects/:projectId/meetings" element={
+          <PrivateRoute allowedRoles={['professor', 'student']}>
+            <Layout><MeetingsPage /></Layout>
+          </PrivateRoute>
+        } />
+        <Route path="/projects/:projectId/evaluations" element={
+          <PrivateRoute allowedRoles={['professor', 'student']}>
+            <Layout><EvaluationsPage /></Layout>
+          </PrivateRoute>
+        } />
+        
+        {/* Industry Projects */}
+        <Route path="/industry" element={
+          <PrivateRoute allowedRoles={['professor', 'student']}>
+            <Layout><IndustryProjectsPage /></Layout>
+          </PrivateRoute>
+        } />
+
+        {/* Gamification */}
+        <Route path="/gamification" element={
+          <PrivateRoute allowedRoles={['professor', 'student']}>
+            <Layout><GamificationPage /></Layout>
+          </PrivateRoute>
+        } />
+
+        {/* Peer Review */}
+        <Route path="/peer-review/:projectId" element={
+          <PrivateRoute allowedRoles={['professor', 'student']}>
+            <Layout><PeerReviewPage /></Layout>
+          </PrivateRoute>
+        } />
+
+        {/* Predictive Analytics */}
+        <Route path="/professor/analytics/predictive" element={
+          <PrivateRoute allowedRoles={['professor']}>
+            <Layout><PredictiveAnalyticsPage /></Layout>
           </PrivateRoute>
         } />
 

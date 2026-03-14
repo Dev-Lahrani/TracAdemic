@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import {
   LayoutDashboard, BookOpen, LogOut, User,
   ChevronRight, Zap, Sun, Moon, Menu, X,
+  Award, Briefcase, TrendingUp,
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -29,7 +30,15 @@ const Navbar = () => {
     { to: '/student/projects', label: 'My Projects', icon: BookOpen },
   ];
 
-  const links = user?.role === 'professor' ? professorLinks : studentLinks;
+  const sharedLinks = [
+    { to: '/industry', label: 'Industry', icon: Briefcase, roles: ['professor', 'student'] },
+    { to: '/gamification', label: 'Achievements', icon: Award, roles: ['professor', 'student'] },
+    { to: '/professor/analytics/predictive', label: 'AI Analytics', icon: TrendingUp, roles: ['professor'] },
+  ];
+
+  const visibleLinks = (user?.role === 'professor' ? professorLinks : studentLinks)
+    .concat(sharedLinks.filter(l => l.roles.includes(user?.role)));
+  const links = visibleLinks;
 
   return (
     <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-50">

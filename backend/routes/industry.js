@@ -7,6 +7,7 @@ const {
   applyToIndustryProject,
   reviewApplication,
   getApplicantTeamProfile,
+  getMyApplications,
 } = require('../controllers/industryController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -14,6 +15,7 @@ router.use(protect);
 
 router.post('/', authorize('professor'), createIndustryProject);
 router.get('/', listIndustryProjects);
+router.get('/my-applications', authorize('student'), getMyApplications);
 router.get('/:id', getIndustryProject);
 router.post('/:id/apply', authorize('student'), applyToIndustryProject);
 router.put('/applications/:id/review', authorize('professor'), reviewApplication);

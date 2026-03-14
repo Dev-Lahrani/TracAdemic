@@ -9,6 +9,16 @@ export const formatDate = (date) => {
 };
 
 /**
+ * Format time from a date string.
+ */
+export const formatTime = (date) => {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit',
+  });
+};
+
+/**
  * Get the number of weeks between two dates.
  */
 export const getWeeksBetween = (startDate, endDate) => {

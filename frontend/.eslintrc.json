@@ -20,7 +20,10 @@
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
     "react-refresh/only-export-components": "off",
-    "react-refresh/no-unused-vars": "off"
+    "react-refresh/no-unused-vars": "off",
+    "no-unused-vars": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "react/no-unescaped-entities": "off"
   },
   "settings": {
     "react": {

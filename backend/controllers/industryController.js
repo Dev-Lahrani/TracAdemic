@@ -154,6 +154,21 @@ const getApplicantTeamProfile = async (req, res) => {
   }
 };
 
+// @desc    Get student's own applications
+// @route   GET /api/industry/my-applications
+// @access  Private (Student)
+const getMyApplications = async (req, res) => {
+  try {
+    const applications = await Application.find({ applicantStudent: req.user.id })
+      .populate('project', 'title company description status deadline')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, applications });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createIndustryProject,
   listIndustryProjects,
@@ -161,4 +176,5 @@ module.exports = {
   applyToIndustryProject,
   reviewApplication,
   getApplicantTeamProfile,
+  getMyApplications,
 };

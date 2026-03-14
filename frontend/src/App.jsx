@@ -22,7 +22,6 @@ const DoubtsPage = lazy(() => import('./pages/shared/DoubtsPage'));
 const MeetingsPage = lazy(() => import('./pages/shared/MeetingsPage'));
 const EvaluationsPage = lazy(() => import('./pages/shared/EvaluationsPage'));
 const IndustryProjectsPage = lazy(() => import('./pages/shared/IndustryProjectsPage'));
-const GamificationPage = lazy(() => import('./pages/shared/GamificationPage'));
 const PeerReviewPage = lazy(() => import('./pages/shared/PeerReviewPage'));
 const PredictiveAnalyticsPage = lazy(() => import('./pages/shared/PredictiveAnalyticsPage'));
 
@@ -138,13 +137,6 @@ const AppRoutes = () => {
         <Route path="/industry" element={
           <PrivateRoute allowedRoles={['professor', 'student']}>
             <Layout><IndustryProjectsPage /></Layout>
-          </PrivateRoute>
-        } />
-
-        {/* Gamification */}
-        <Route path="/gamification" element={
-          <PrivateRoute allowedRoles={['professor', 'student']}>
-            <Layout><GamificationPage /></Layout>
           </PrivateRoute>
         } />
 

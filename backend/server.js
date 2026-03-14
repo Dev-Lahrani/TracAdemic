@@ -19,6 +19,7 @@ const doubtRoutes = require('./routes/doubts');
 const evaluationRoutes = require('./routes/evaluations');
 const industryRoutes = require('./routes/industry');
 const githubRoutes = require('./routes/github');
+const peerReviewRoutes = require('./routes/peerReviews');
 
 const app = express();
 
@@ -87,6 +88,7 @@ app.use('/api/doubts', doubtRoutes);
 app.use('/api/evaluations', evaluationRoutes);
 app.use('/api/industry', industryRoutes);
 app.use('/api/github', githubRoutes);
+app.use('/api/peer-reviews', peerReviewRoutes);
 
 // 404 handler
 app.use((req, res) => {

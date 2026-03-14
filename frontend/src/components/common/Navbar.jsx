@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import {
   LayoutDashboard, BookOpen, LogOut, User,
   ChevronRight, Zap, Sun, Moon, Menu, X,
-  Award, Briefcase, TrendingUp,
+  Briefcase, TrendingUp,
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -31,8 +31,7 @@ const Navbar = () => {
   ];
 
   const sharedLinks = [
-    { to: '/industry', label: 'Industry', icon: Briefcase, roles: ['professor', 'student'] },
-    { to: '/gamification', label: 'Achievements', icon: Award, roles: ['professor', 'student'] },
+    { to: '/industry', label: 'Industry Projects', icon: Briefcase, roles: ['professor', 'student'] },
     { to: '/professor/analytics/predictive', label: 'AI Analytics', icon: TrendingUp, roles: ['professor'] },
   ];
 

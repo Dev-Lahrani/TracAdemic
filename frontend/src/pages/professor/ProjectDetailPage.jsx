@@ -7,7 +7,7 @@ import StatCard from '../../components/common/StatCard';
 import { formatDate, getCurrentWeek, getWeeksBetween, moodEmoji } from '../../utils/helpers';
 import {
   Users, FileText, TrendingUp, AlertTriangle,
-  RefreshCw, Calendar, CheckCircle,
+  RefreshCw, Calendar, CheckCircle, FolderOpen, MessageCircle, ClipboardCheck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -130,6 +130,22 @@ const ProjectDetailPage = () => {
         <StatCard title="Students" value={totalStudents} icon={Users} color="purple" />
         <StatCard title="This Week Updates" value={`${currentWeekUpdates.length}/${totalStudents}`} icon={FileText} color="green" />
         <StatCard title="Submission Rate" value={`${submissionRate}%`} icon={TrendingUp} color={submissionRate < 50 ? 'red' : 'green'} />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Link to={`/projects/${id}/documents`} className="btn-secondary flex items-center gap-2 text-sm">
+          <FolderOpen className="w-4 h-4" /> Documents
+        </Link>
+        <Link to={`/projects/${id}/doubts`} className="btn-secondary flex items-center gap-2 text-sm">
+          <MessageCircle className="w-4 h-4" /> Q&A
+        </Link>
+        <Link to={`/projects/${id}/meetings`} className="btn-secondary flex items-center gap-2 text-sm">
+          <Calendar className="w-4 h-4" /> Meetings
+        </Link>
+        <Link to={`/projects/${id}/evaluations`} className="btn-secondary flex items-center gap-2 text-sm">
+          <ClipboardCheck className="w-4 h-4" /> Evaluations
+        </Link>
       </div>
 
       {/* Tabs */}

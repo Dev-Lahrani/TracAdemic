@@ -6,7 +6,7 @@ import AIInsightPanel from '../../components/ai/AIInsightPanel';
 import { formatDate, getCurrentWeek, getWeeksBetween, moodEmoji } from '../../utils/helpers';
 import {
   FileText, Plus, Calendar, CheckCircle, Users,
-  AlertTriangle, TrendingUp,
+  AlertTriangle, TrendingUp, FolderOpen, MessageCircle, ClipboardCheck
 } from 'lucide-react';
 
 const StudentProjectDetailPage = () => {
@@ -95,6 +95,22 @@ const StudentProjectDetailPage = () => {
               Update submitted ✓
             </span>
           )}
+        </div>
+
+        {/* Quick Links */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          <Link to={`/projects/${projectId}/documents`} className="btn-secondary flex items-center gap-2 text-sm">
+            <FolderOpen className="w-4 h-4" /> Documents
+          </Link>
+          <Link to={`/projects/${projectId}/doubts`} className="btn-secondary flex items-center gap-2 text-sm">
+            <MessageCircle className="w-4 h-4" /> Q&A
+          </Link>
+          <Link to={`/projects/${projectId}/meetings`} className="btn-secondary flex items-center gap-2 text-sm">
+            <Calendar className="w-4 h-4" /> Meetings
+          </Link>
+          <Link to={`/projects/${projectId}/evaluations`} className="btn-secondary flex items-center gap-2 text-sm">
+            <ClipboardCheck className="w-4 h-4" /> Grades
+          </Link>
         </div>
 
         {/* Progress bar */}

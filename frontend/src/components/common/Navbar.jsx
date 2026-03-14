@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import {
   LayoutDashboard, BookOpen, LogOut, User,
   ChevronRight, Zap, Sun, Moon, Menu, X,
-  Briefcase, TrendingUp,
+  Briefcase, TrendingUp, Bell,
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -76,6 +76,17 @@ const Navbar = () => {
 
           {/* Right section */}
           <div className="flex items-center gap-2">
+            {/* Notifications */}
+            {user && (
+              <button
+                className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Notifications"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+            )}
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}

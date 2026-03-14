@@ -22,6 +22,7 @@ const githubRoutes = require('./routes/github');
 const peerReviewRoutes = require('./routes/peerReviews');
 const codeReviewRoutes = require('./routes/codeReview');
 const voiceUpdatesRoutes = require('./routes/voiceUpdates');
+const assignmentRoutes = require('./routes/assignments');
 
 const app = express();
 
@@ -93,6 +94,7 @@ app.use('/api/github', githubRoutes);
 app.use('/api/peer-reviews', peerReviewRoutes);
 app.use('/api/code-review', codeReviewRoutes);
 app.use('/api/voice-updates', voiceUpdatesRoutes);
+app.use('/api/assignments', assignmentRoutes);
 
 // Serve voice/video uploads
 app.use('/uploads/voice-updates', express.static(path.join(__dirname, 'uploads/voice-updates')));

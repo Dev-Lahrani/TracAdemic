@@ -26,6 +26,7 @@ const PeerReviewPage = lazy(() => import('./pages/shared/PeerReviewPage'));
 const PredictiveAnalyticsPage = lazy(() => import('./pages/shared/PredictiveAnalyticsPage'));
 const CodeReviewPage = lazy(() => import('./pages/shared/CodeReviewPage'));
 const VoiceUpdatePage = lazy(() => import('./pages/shared/VoiceUpdatePage'));
+const AssignmentsPage = lazy(() => import('./pages/shared/AssignmentsPage'));
 
 /** Protected route – redirects to /login if unauthenticated */
 const PrivateRoute = ({ children, allowedRoles }) => {
@@ -160,6 +161,13 @@ const AppRoutes = () => {
         <Route path="/projects/:projectId/voice-update" element={
           <PrivateRoute allowedRoles={['professor', 'student']}>
             <Layout><VoiceUpdatePage /></Layout>
+          </PrivateRoute>
+        } />
+
+        {/* Task Assignments */}
+        <Route path="/projects/:projectId/assignments" element={
+          <PrivateRoute allowedRoles={['professor', 'student']}>
+            <Layout><AssignmentsPage /></Layout>
           </PrivateRoute>
         } />
 

@@ -7,7 +7,7 @@ import StatCard from '../../components/common/StatCard';
 import { formatDate, getCurrentWeek, getWeeksBetween, moodEmoji } from '../../utils/helpers';
 import {
   Users, FileText, TrendingUp, AlertTriangle,
-  RefreshCw, Calendar, CheckCircle, FolderOpen, MessageCircle, ClipboardCheck
+  RefreshCw, Calendar, CheckCircle, FolderOpen, MessageCircle, ClipboardCheck, Code2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -145,6 +145,9 @@ const ProjectDetailPage = () => {
         </Link>
         <Link to={`/projects/${id}/evaluations`} className="btn-secondary flex items-center gap-2 text-sm">
           <ClipboardCheck className="w-4 h-4" /> Evaluations
+        </Link>
+        <Link to={`/projects/${id}/code-review`} className="btn-secondary flex items-center gap-2 text-sm">
+          <Code2 className="w-4 h-4" /> Code Review
         </Link>
       </div>
 

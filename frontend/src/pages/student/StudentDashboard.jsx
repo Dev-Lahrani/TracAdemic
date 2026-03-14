@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import StatCard from '../../components/common/StatCard';
 import { DashboardSkeleton } from '../../components/common/Skeleton';
-import { BookOpen, FileText, Plus, Clock, CheckSquare, AlertTriangle } from 'lucide-react';
+import { BookOpen, FileText, Plus, Clock, CheckSquare, AlertTriangle, Mic } from 'lucide-react';
 import { getCurrentWeek } from '../../utils/helpers';
 
 const StudentDashboard = () => {
@@ -124,6 +124,13 @@ const StudentDashboard = () => {
                     >
                       <FileText className="w-3.5 h-3.5" />
                       Submit
+                    </Link>
+                    <Link
+                      to={`/projects/${project._id}/voice-update`}
+                      className="btn-secondary text-sm flex items-center gap-1 px-3"
+                      title="Voice Update"
+                    >
+                      <Mic className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 </div>

@@ -21,6 +21,7 @@ const industryRoutes = require('./routes/industry');
 const githubRoutes = require('./routes/github');
 const peerReviewRoutes = require('./routes/peerReviews');
 const codeReviewRoutes = require('./routes/codeReview');
+const voiceUpdatesRoutes = require('./routes/voiceUpdates');
 
 const app = express();
 
@@ -91,6 +92,10 @@ app.use('/api/industry', industryRoutes);
 app.use('/api/github', githubRoutes);
 app.use('/api/peer-reviews', peerReviewRoutes);
 app.use('/api/code-review', codeReviewRoutes);
+app.use('/api/voice-updates', voiceUpdatesRoutes);
+
+// Serve voice/video uploads
+app.use('/uploads/voice-updates', express.static(path.join(__dirname, 'uploads/voice-updates')));
 
 // 404 handler
 app.use((req, res) => {

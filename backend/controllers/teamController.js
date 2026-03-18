@@ -39,7 +39,7 @@ const createTeam = async (req, res) => {
 
     const project = await Project.findById(projectId);
     if (!project) return res.status(404).json({ success: false, message: 'Project not found' });
-    if (project.professor.toString() !== req.user.id.toString()) {
+    if (!project.professor || project.professor.toString() !== req.user.id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized to manage this project' });
     }
 

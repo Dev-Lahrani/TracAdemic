@@ -9,7 +9,7 @@ const { protect } = require('../middleware/auth');
 
 router.use(protect);
 
-router.post('/', protect, createReview);
+router.post('/', createReview);
 router.get('/project/:projectId', getProjectReviews);
 router.get('/my-reviews/:projectId', getMyReviews);
 

@@ -100,6 +100,10 @@ const reviewPullRequest = async (req, res) => {
     const { prId } = req.params;
     const { repo, token, files } = req.body;
 
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ success: false, message: 'Files array is required' });
+    }
+
     const reviewComments = [];
 
     files.forEach(file => {

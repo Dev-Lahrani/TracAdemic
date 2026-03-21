@@ -26,7 +26,6 @@ const VoiceUpdatePage = () => {
   const audioRef = useRef(null);
   const streamRef = useRef(null);
 
-  // Clean up on unmount
   useEffect(() => {
     return () => {
       if (streamRef.current) {
@@ -35,8 +34,11 @@ const VoiceUpdatePage = () => {
       if (audioRef.current) {
         audioRef.current.pause();
       }
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
     };
-  }, []);
+  }, [audioUrl]);
 
   const startRecording = async () => {
     try {

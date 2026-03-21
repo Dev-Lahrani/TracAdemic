@@ -223,7 +223,7 @@ const VoiceUpdatePage = () => {
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="bg-blue-500 h-2 rounded-full"
-                      style={{ width: `${(currentTime / duration) * 100}%` }}
+                      style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
                     />
                   </div>
                   <span>{formatTime(currentTime)} / {formatTime(duration)}</span>

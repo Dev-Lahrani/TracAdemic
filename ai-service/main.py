@@ -31,7 +31,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGINS") else ["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,9 +64,12 @@ async def summarize(request: SummarizeRequest):
     if not request.updates:
         raise HTTPException(status_code=400, detail="No updates provided")
 
-    result = await summarizer.summarize(
-        updates=request.updates,
-        project=request.project,
-        week_number=request.weekNumber,
-    )
-    return result
+    try:
+        result = await summarizer.summarize(
+            updates=request.updates,
+            project=request.project,
+            week_number=request.weekNumber,
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Summarization failed: {str(e)}")

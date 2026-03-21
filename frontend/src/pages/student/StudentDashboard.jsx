@@ -14,11 +14,17 @@ const StudentDashboard = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    api.get('/projects/student').then(({ data }) => {
-      setProjects(data.projects);
-    }).catch(() => {
-      setError('Failed to load projects. Please try again.');
-    }).finally(() => setLoading(false));
+    const fetchProjects = async () => {
+      try {
+        const { data } = await api.get('/projects/student');
+        setProjects(data.projects);
+      } catch {
+        setError('Failed to load projects. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
   }, []);
 
   if (loading) return <DashboardSkeleton />;

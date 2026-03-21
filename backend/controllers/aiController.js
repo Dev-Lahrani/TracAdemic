@@ -16,7 +16,10 @@ const generateRuleBasedSummary = (updates, project) => {
   const completedTaskCount = updates.reduce((sum, u) => sum + (u.completedTasks || []).length, 0);
   const moods = { great: 0, good: 0, okay: 0, struggling: 0 };
   updates.forEach((u) => { if (u.mood) moods[u.mood]++; });
-  const dominantMood = Object.entries(moods).sort((a, b) => b[1] - a[1])[0][0];
+  const totalMoodCount = Object.values(moods).reduce((a, b) => a + b, 0);
+  const dominantMood = totalMoodCount > 0 
+    ? Object.entries(moods).sort((a, b) => b[1] - a[1])[0][0]
+    : 'okay';
 
   let summary = `This week, ${updates.length} team member(s) submitted updates. `;
   summary += `The team collectively completed ${completedTaskCount} tasks, `;
@@ -250,7 +253,9 @@ const analyzeContributions = async (req, res) => {
       updateCount: m.updates,
     }));
 
-    const avg = members.reduce((sum, m) => sum + m.avgContribution, 0) / members.length;
+    const avg = members.length > 0 
+      ? members.reduce((sum, m) => sum + m.avgContribution, 0) / members.length 
+      : 0;
     const imbalanced = members.filter((m) => m.avgContribution < avg * 0.5);
 
     let summaryText = `Contribution analysis for ${members.length} team member(s). `;
